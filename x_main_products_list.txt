@@ -1,10 +1,10 @@
-00001,Asscream
-00002,Jumbo Size Asscream
-00003,Limited Edition Asscream
-00004,Asscream 4 Pack
-00005,Asscream Sport
-00006,Asscream FOR KIDS!
-00007,Asscream Lite
-00008,Asscream - Proglide
-00010,Asscream Mini
-00011,Asscream For Women
+00001,Asscream,1.99
+00002,Jumbo Size Asscream,2.99
+00003,Limited Edition Asscream,1.50
+00004,Asscream 4 Pack,1.00
+00005,Asscream Sport,4.99
+00006,Asscream FOR KIDS!,6.99
+00007,Asscream Lite,2.29
+00008,Asscream ProGlide,1.15
+00010,Asscream Mini,1.10
+00011,Asscream For Women,21.49

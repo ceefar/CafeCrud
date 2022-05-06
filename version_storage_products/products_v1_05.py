@@ -1,6 +1,5 @@
 import format_random_v2_00 as fm
 import csv
-import re
 #import time as t
 
 ## LAST STABLE STORAGE VERSION v1.05
@@ -15,15 +14,14 @@ class Product:
 # OBJECT (PRODUCT) METHODS ########################################
 
 # INIT / CREATE NEW ########################################
-    def __init__(self, name:str, price_gbp:float, product_number:str = None): # if you want vars to be unique for each instance/object of a class, put them in init, if putting them above init changing the var will change it for ALL instances of the class
+    def __init__(self, name:str, product_number:str = None): # if you want vars to be unique for each instance/object of a class, put them in init, if putting them above init changing the var will change it for ALL instances of the class
         # initialising the variables for each object
         if product_number != None:
-            self.product_number, self.price_gbp, self.name = product_number, price_gbp, name
+            self.product_number,self.name = product_number,name
             self.products_list.append(self)
-            print(f"#{self.product_number} {self.name} £{self.price_gbp} Loaded")
+            print(f"#{self.product_number} {self.name} Loaded")
         else:
             self.name = name
-            self.price_gbp = price_gbp
             def generate_initial_product_numbers():
                 # to store 1000 comfortably, 10,000 total size. (w/ pagination now stores 10,000 comfortably, 100,000 total size - in regards to terminal display)
                 p_len = lambda x : 5 - len(str(len(self.products_list)+1))
@@ -33,21 +31,22 @@ class Product:
             if len(self.products_list) == 0: # if zero size list (so first time)
                 self.product_number = generate_initial_product_numbers() + str(len(self.products_list) + 1)
             else:
+                # OK SO THIS STUFF IN THE TOP IF STATEMENT (since has numbers, this is where you want to test duh) 
+                #   - dont make this be long, if cant get it, function to rewrite them would be easy af! - probably just do this anyway then duh!!!!!
                 #temp_list = []
                 #for z, _ in enumerate(self.products_list):
                 #    temp_list.append(max(self.products_list[z].product_number))
                 #print(max(temp_list))
                 self.product_number = generate_initial_product_numbers() + str(self.products_list.index(self.products_list[-1]) + 2) #print(f"The last number was? : {self.products_list.index(self.products_list[-1])}, type {type(self.products_list.index(self.products_list[-1]))}")
-                # FYI i do think this actually does solve the product numbers issue, regardless of deletes, as long as it stays running right... duh?
             # append it to the "global" list and print back confirmation
             self.products_list.append(self)
-            print(f"#{self.product_number} - {self.name} {self.price_gbp} Created")       
+            print(f"#{self.product_number} - {self.name} Created")       
     # END __INIT__  
 
 # PRINT PRODUCTS METHODS ######################################## 
 
     # v6 print - pagination
-    def paginated_print(self, disp_size: int=22, rows: int=4):
+    def paginated_print(self, disp_size: int=22, rows: int=5):
         try:
             user_wants_page = 1 # initialises the loop
             # whole method is this loop, obvs not ideal 
@@ -57,7 +56,7 @@ class Product:
                 print(f"Sexy AF Pagniation - Dynamic Page Size\nCurrently X Page Items, Approx XXXX Products\n(also uses index notation)\n{fm.print_dashes(return_it=True)}\n")
                 # note the reason to point out uses index notation is for deleting and displaying etc this is best, thats just what indexing is for, but product numbers is more like a unique identifier that isn't the name incase it was required which im sure there are irl cases for
                 print(f"Total Amount of Products In The List = {len(Product.products_list)}\n")
-                usable_screen = int(disp_size) - 8
+                usable_screen = int(disp_size) - 10
                 ipl = usable_screen # max amounts of items that can be in one vertical line
                 ipp = ipl * rows # items per page = max amount of items on the page, the vertical list multiplied by the amount of rows
                 #rows = 5 # var for readability and incase wanna change for smaller sized screens not baking into equation (ik actually is cols lol) - also is now a setting btw
@@ -125,8 +124,8 @@ class Product:
                     print_string = ""
                     for prdct in the_line:
                         prdct + current_page_number
-                        current_string = (f"{prdct} {self.products_list[prdct].name} {self.products_list[prdct].price_gbp}")
-                        spaces = 40 - (len(current_string))
+                        current_string = (f"{prdct} {self.products_list[prdct].name}")
+                        spaces = 30 - (len(current_string))
                         spaces_string = ""
                         if int(prdct) + 1 == 10: # adjust for the extra character in the display by minusing one from the spaces on the end
                             spaces -= 1
@@ -140,7 +139,7 @@ class Product:
                             spaces -= 1
                         for x in range(spaces):
                             spaces_string += " "
-                        print_string += (f"[ {int(prdct) + 1} ] {self.products_list[prdct].name} - £{self.products_list[prdct].price_gbp:.2f} {spaces_string}")
+                        print_string += (f"[ {int(prdct) + 1} ] {self.products_list[prdct].name} {spaces_string}")
                     print(print_string)
                     # yield back as tuples with index value, check as recieving yield, if index value not in the indexes that would be in the current page (0-59,60-119...)
                 print("")
@@ -191,13 +190,13 @@ class Product:
 
     # v4 print - one line generator
     def generate_index_name_string(self):
-        return((f"{i+1}. {p.name} - £{p.price_gbp}") for i,p in enumerate(self.products_list))
+        return((f"[ {i+1} ] - {p.name}") for i,p in enumerate(self.products_list))
 
     # v3 print - for loop
     def yield_back_index_name_string(self):  
         for i, p in enumerate(self.products_list):
             i += 1
-            final_string = (f"[ {i} ] - {p.name} - £{p.price_gbp}") 
+            final_string = (f"[ {i} ] - {p.name}") 
             yield(final_string)
             # END LOOP
         #END FOR
@@ -205,12 +204,12 @@ class Product:
     # v2 print - basic, by index
     def print_all_products_by_index(self):
         for i, p in enumerate(self.products_list):
-            print(f"[{i+1}] - {p.name} - £{p.price_gbp}")
+            print(f"[{i+1}] - {p.name}")
 
     # v1 print - basic, by product name
     def print_all_products_by_name(self):
         for p in self.products_list:
-            print(f"[{p.product_number}] - {p.name} - £{p.price_gbp}")
+            print(f"[{p.product_number}] - {p.name}")
 
 # UPDATE PRODUCTS METHODS ######################################## 
 
@@ -237,21 +236,21 @@ class Product:
         # need if empty or None validation
         f = open(file_name, "w")
         for i, _ in enumerate(self.products_list):
-            f.write(self.products_list[i].product_number + "," + self.products_list[i].name + "," + self.products_list[i].price_gbp + "\n")
+            f.write(self.products_list[i].product_number + "," + self.products_list[i].name + "\n")
         f.close
 
     def save_all_products_as_csv(self, file_name:str = "x_main_products_list.csv"):
         with open(file_name, "w", newline="") as csvfile:
             # set the headers for the csv
-            fieldnames = ["product_number", "product_name", "price_gbp"]
+            fieldnames = ["product_number", "product_name"]
             # instruct the writer to write the headers
             writer = csv.DictWriter(csvfile, delimiter=',', fieldnames= fieldnames)
             writer.writeheader()
             # instruct the writer to write the row
             for i, _ in enumerate(self.products_list):
-                writer.writerow({"product_number":self.products_list[i].product_number, "product_name":self.products_list[i].name, "price_gbp":self.products_list[i].price_gbp})
+                writer.writerow({"product_number":self.products_list[i].product_number, "product_name":self.products_list[i].name})
 
-    def load_list_from_file(init_load = False):
+    def load_list_from_file():
         list_copier = []
         f = open("x_main_products_list.txt", "r")
         for lines in f:
@@ -259,10 +258,9 @@ class Product:
         f.close()
         for amount in range(len(list_copier)):
             x = list_copier[amount].split(",")
-            Product(x[1], x[2], x[0]) #print(f"{x} <- x")
+            Product(x[1], x[0]) #print(f"{x} <- x")
         print("Loaded Successfully") # actually 100% is not true, would need to do properly just want some feedback from the function for now
-        if init_load:
-            fm.fake_input()
+        fm.fake_input()
 
 # RANDOM PRODUCT METHODS #########################################
 
@@ -514,37 +512,13 @@ def print_submenu(disp_size):
 
 ## GENERAL FUNCTIONS #######################################################################################################################################################
 
-def get_price():
-    the_price = "1"
-    while the_price != "0":
-        #print("Please Use This Format - £12 or £12.9 or £12.90") - got it working with "12." (which is treated as 12.0) so removed
-        fm.print_dashes()
-        price_in_pounds = input(f"Enter The Price (In GBP - e.g 12.99) For Product {Product.count_products_list(Product) + 1} : £")
-        price_is_good = (re.match(r'\d+(?:\.\d{0,2})?$', price_in_pounds))
-        print(f"price is good? {price_is_good}")
-        if price_is_good :
-            print(price_is_good.span())
-            print(price_is_good.group())
-            the_price == "0"
-            break
-        else:
-            price_in_pounds = "1"
-            print("Wrong Format - Please Try Again")
-    # END WHILE
-    x = float(price_in_pounds)
-    print(f"Returning {x}{type(x)}")
-    return(float(price_in_pounds))
-
-
 def create_new_product(disp_size):
     fm.format_display(disp_size)
     print(f"Create New Product\n{fm.print_dashes(return_it=True)}")
     name = input(f"Enter A Name For Product {Product.count_products_list(Product) + 1} : ")
-    # CONVERT PRICE IN POUNDS TO FLOAT, IF DOESNT WORK THEN GO AGAIN
-    price_in_pounds = get_price()
     fm.format_display(disp_size)
     # CREATE NEW INSTANCE OF PRODUCT WITH USER GIVEN NAME (runs print confirms to user, etc)
-    Product(name, price_in_pounds)
+    Product(name)
     # FOR PRINTING BACK 0s TO THE USER, USES THE LEN OF THE STR OF THE LEN OG PRODUCT NUMBERS AND USES IT AS AN INDEX TO SLICE FROM THE END OF THE STRING
     trim_by = lambda x : 4 - len(str(len(x)))
     print(f"Product #{str(Product.get_last_product_number(Product)[trim_by(Product.products_list):])} Added Sucessfully")
@@ -564,16 +538,16 @@ def get_user_yes_true_or_no_false():
 def quick_add_ten_products(disp_size):
     fm.format_display(disp_size)
     print(f"Generating Asscream...\n{fm.print_dashes(return_it=True)}\n")
-    Product("Asscream",1.99)
-    Product("Jumbo Size Asscream",2.99)
-    Product("Limited Edition Asscream",1.50)
-    Product("Asscream 4 Pack",1.00)
-    Product("Asscream Sport",4.99)
-    Product("Asscream FOR KIDS!",6.99)
-    Product("Asscream Lite",2.29)
-    Product("Asscream ProGlide",1.15)
-    Product("Asscream Luxe",31.10)
-    Product("Asscream Mini",1.10)
+    Product("Asscream")
+    Product("Jumbo Size Asscream")
+    Product("Limited Edition Asscream")
+    Product("Asscream 4 Pack")
+    Product("Asscream Sport")
+    Product("Asscream FOR KIDS!")
+    Product("Asscream Lite")
+    Product("Asscream - Proglide")
+    Product("Asscream - On The Go")
+    Product("Asscream Mini")
     print("")
     print("10 Asscreams Added")
     print(f"{len(Product.products_list)} Asscreams Total\n")
@@ -582,7 +556,7 @@ def quick_add_ten_products(disp_size):
 
 def quick_add_some_products(inc_by:int):
     for i in range(inc_by):
-        Product(f"Asscream [{i}]",6.99)
+        Product(f"Asscream [{i}]")
     fm.format_display(20)
 
 def format_screen(disp_size:int): 
@@ -606,15 +580,15 @@ def format_screen(disp_size:int):
 def set_display_rows(rows: int):
     # to improve that just make the amount of spaces dynamic and trim the end of long strings to fit uniformly
     # N0TE! - should trim the end of long strings anyway btw!
-    print("Choose How Many Columns To Display In Menus (3 - 4)")
-    print("Max Input : 4 Columns (tbc)") # used to be 5 until price etc so updating for those changes tho no really tested, hardly worth it
-    rows = int(input("Enter A Number Between 1 and 4 : "))
+    print("Choose How Many Rows To Display In Menus (3 - 5)")
+    print("Max input 5 rows (for now)")
+    rows = int(input("Enter A Number Between 1 and 5 : "))
     return(rows)
 
 # DRIVER
 # should set display on start?
 def driver():
-    Product.load_list_from_file(True)
+    #Product.load_list_from_file()
     main_menu()
 
 driver()
