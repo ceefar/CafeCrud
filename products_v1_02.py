@@ -15,15 +15,16 @@ class Product:
 # OBJECT (PRODUCT) METHODS ########################################
 
 # INIT / CREATE NEW ########################################
-    def __init__(self, name:str, price_gbp:float, product_number:str = None): # if you want vars to be unique for each instance/object of a class, put them in init, if putting them above init changing the var will change it for ALL instances of the class
+    def __init__(self, name:str, price_gbp:float, quantity:int, product_number:str = None): # if you want vars to be unique for each instance/object of a class, put them in init, if putting them above init changing the var will change it for ALL instances of the class
         # initialising the variables for each object
         if product_number != None:
-            self.product_number, self.price_gbp, self.name = product_number, price_gbp, name
+            self.product_number, self.price_gbp, self.quantity = quantity, self.name = product_number, price_gbp, quantity, name
             self.products_list.append(self)
-            print(f"#{self.product_number} {self.name} £{self.price_gbp} Loaded")
+            print(f"#{self.product_number} {self.name} £{self.price_gbp} ({self.price_gbp}) Loaded")
         else:
             self.name = name
             self.price_gbp = price_gbp
+            quantity:int
             def generate_initial_product_numbers():
                 # to store 1000 comfortably, 10,000 total size. (w/ pagination now stores 10,000 comfortably, 100,000 total size - in regards to terminal display)
                 p_len = lambda x : 5 - len(str(len(self.products_list)+1))
