@@ -1,4 +1,5 @@
 import format_random_v2_00 as fm
+import csv
 #import time as t
 
 ## LAST STABLE STORAGE VERSION v1.05
@@ -220,21 +221,6 @@ class Product:
         self.products_list[to_update - 1].name = new_name
         print(f"Name Updated To {self.products_list[to_update - 1].name}")
 
-    # UPDATE DUPLICATE PRODUCT NUMBERS
-    def update_duplicate_product_numbers(self):
-        #a = [1, 2, 3, 2, 1, 5, 6, 5, 5, 5]
-        #res = [idx for idx, _ in enumerate(self.products_list) if self.products_list[idx].name in self.products_list[:idx].name]
-        
-        dup_cache = []
-        for index, _ in enumerate(self.products_list):
-            #dup_cache = []
-            print(index)
-            print(self.products_list[index].product_number)
-            #to_cache###################################################################################################
-            dup_cache.append(self.products_list[index].product_number)
-        print(dup_cache)
-        #print(res)
-
 # DELETE PRODUCTS METHODS ######################################## 
 
     # DELETE
@@ -253,6 +239,16 @@ class Product:
             f.write(self.products_list[i].product_number + "," + self.products_list[i].name + "\n")
         f.close
 
+    def save_all_products_as_csv(self, file_name:str = "x_main_products_list.csv"):
+        with open(file_name, "w", newline="") as csvfile:
+            # set the headers for the csv
+            fieldnames = ["product_number", "product_name"]
+            # instruct the writer to write the headers
+            writer = csv.DictWriter(csvfile, delimiter=',', fieldnames= fieldnames)
+            # instruct the writer to write the row
+            for i, _ in enumerate(self.products_list):
+                writer.writerow({"product_number":self.products_list[i].product_number, "product_name":self.products_list[i].name})
+
     def load_list_from_file():
         list_copier = []
         f = open("x_main_products_list.txt", "r")
@@ -262,8 +258,8 @@ class Product:
         for amount in range(len(list_copier)):
             x = list_copier[amount].split(",")
             Product(x[1], x[0]) #print(f"{x} <- x")
+        print("Loaded Successfully") # actually 100% is not true, would need to do properly just want some feedback from the function for now
         fm.fake_input()
-        
 
 # RANDOM PRODUCT METHODS #########################################
 
@@ -365,9 +361,8 @@ def main_menu():
                         
         # [6] -
         elif user_menu_input == "6":
-            Product.update_duplicate_product_numbers(Product)
-            fm.fake_input()
-
+            pass
+           
         # [7] -  
         elif user_menu_input == "7":
             pass
@@ -394,9 +389,10 @@ def main_menu():
 
     # END WHILE
     Product.save_all_products_as_txt(Product)
+    Product.save_all_products_as_csv(Product)
     print("SAVING...")
 
-## PRINT SUBMENU #######################################################################################################################################################
+## SETTINGS SUBMENU #######################################################################################################################################################
 
 def settings_submenu(disp_size):
     user_submenu_input = "1"
@@ -590,11 +586,11 @@ def set_display_rows(rows: int):
 
 # DRIVER
 # should set display on start?
-main_menu()
+def driver():
+    #Product.load_list_from_file()
+    main_menu()
 
-
-
-
+driver()
 
 # NOTES
 #
