@@ -18,13 +18,13 @@ class Product:
     def __init__(self, name:str, price_gbp:float, quantity:int, product_number:str = None): # if you want vars to be unique for each instance/object of a class, put them in init, if putting them above init changing the var will change it for ALL instances of the class
         # initialising the variables for each object
         if product_number != None:
-            self.product_number, self.price_gbp, self.quantity = quantity, self.name = product_number, price_gbp, quantity, name
+            self.name, self.price_gbp, self.quantity, self.product_number = name, price_gbp, quantity, product_number
             self.products_list.append(self)
-            print(f"#{self.product_number} {self.name} £{self.price_gbp} ({self.price_gbp}) Loaded")
+            print(f"#{self.product_number} {self.name} £{self.price_gbp} ({self.quantity}) Loaded")
         else:
             self.name = name
             self.price_gbp = price_gbp
-            quantity:int
+            self.quantity = quantity
             def generate_initial_product_numbers():
                 # to store 1000 comfortably, 10,000 total size. (w/ pagination now stores 10,000 comfortably, 100,000 total size - in regards to terminal display)
                 p_len = lambda x : 5 - len(str(len(self.products_list)+1))
@@ -42,7 +42,7 @@ class Product:
                 # FYI i do think this actually does solve the product numbers issue, regardless of deletes, as long as it stays running right... duh?
             # append it to the "global" list and print back confirmation
             self.products_list.append(self)
-            print(f"#{self.product_number} - {self.name} {self.price_gbp} Created")       
+            print(f"#{self.product_number} - {self.name} £{self.price_gbp} Stored With {self.quantity} Items")       
     # END __INIT__  
 
 # PRINT PRODUCTS METHODS ######################################## 
@@ -126,8 +126,8 @@ class Product:
                     print_string = ""
                     for prdct in the_line:
                         prdct + current_page_number
-                        current_string = (f"{prdct} {self.products_list[prdct].name} {self.products_list[prdct].price_gbp}")
-                        spaces = 40 - (len(current_string))
+                        current_string = (f"{prdct} {self.products_list[prdct].name} {self.products_list[prdct].price_gbp} {self.products_list[prdct].quantity} ")
+                        spaces = 42 - (len(current_string))
                         spaces_string = ""
                         if int(prdct) + 1 == 10: # adjust for the extra character in the display by minusing one from the spaces on the end
                             spaces -= 1
@@ -141,7 +141,7 @@ class Product:
                             spaces -= 1
                         for x in range(spaces):
                             spaces_string += " "
-                        print_string += (f"[ {int(prdct) + 1} ] {self.products_list[prdct].name} - £{self.products_list[prdct].price_gbp:.2f} {spaces_string}")
+                        print_string += (f"[ {int(prdct) + 1} ] {self.products_list[prdct].name} - £{self.products_list[prdct].price_gbp} ({self.products_list[prdct].quantity}) {spaces_string}")
                     print(print_string)
                     # yield back as tuples with index value, check as recieving yield, if index value not in the indexes that would be in the current page (0-59,60-119...)
                 print("")
@@ -153,7 +153,7 @@ class Product:
                     break
                 else:
                     user_wants_page = int(user_wants_page)
-        except ValueError:
+        except ValueError as e:
             print("STOP PRESSING ENTER! (or maybe this is bad ux duhhhh!") # "No... it's the children who are wrong" https://knowyourmeme.com/memes/am-i-so-out-of-touch
 
 
@@ -194,11 +194,12 @@ class Product:
     def generate_index_name_string(self):
         return((f"{i+1}. {p.name} - £{p.price_gbp}") for i,p in enumerate(self.products_list))
 
-    # v3 print - for loop
+    # v3 print - generate/yield for loop
     def yield_back_index_name_string(self):  
         for i, p in enumerate(self.products_list):
             i += 1
-            final_string = (f"[ {i} ] - {p.name} - £{p.price_gbp}") 
+            is_sold_out = lambda x : int(x) if int(x) > 0 else "[ SOLD OUT! ]"
+            final_string = (f"[ {i} ] - {p.name} - £{p.price_gbp} ({is_sold_out(p.quantity)})") 
             yield(final_string)
             # END LOOP
         #END FOR
@@ -238,21 +239,21 @@ class Product:
         # need if empty or None validation
         f = open(file_name, "w")
         for i, _ in enumerate(self.products_list):
-            f.write(self.products_list[i].product_number + "," + self.products_list[i].name + "," + self.products_list[i].price_gbp + "\n")
+            f.write(self.products_list[i].product_number + "," + self.products_list[i].name + "," + str(self.products_list[i].price_gbp) + "," + self.products_list[i].quantity + "\n")
         f.close
 
     def save_all_products_as_csv(self, file_name:str = "x_main_products_list.csv"):
         with open(file_name, "w", newline="") as csvfile:
             # set the headers for the csv
-            fieldnames = ["product_number", "product_name", "price_gbp"]
+            fieldnames = ["product_number", "product_name", "price_gbp", "quantity"]
             # instruct the writer to write the headers
             writer = csv.DictWriter(csvfile, delimiter=',', fieldnames= fieldnames)
             writer.writeheader()
             # instruct the writer to write the row
             for i, _ in enumerate(self.products_list):
-                writer.writerow({"product_number":self.products_list[i].product_number, "product_name":self.products_list[i].name, "price_gbp":self.products_list[i].price_gbp})
+                writer.writerow({"product_number":self.products_list[i].product_number, "product_name":self.products_list[i].name, "price_gbp":self.products_list[i].price_gbp, "quantity":self.products_list[i].quantity})
 
-    def load_list_from_file(init_load = False):
+    def load_list_from_file(init_load):
         list_copier = []
         f = open("x_main_products_list.txt", "r")
         for lines in f:
@@ -260,9 +261,9 @@ class Product:
         f.close()
         for amount in range(len(list_copier)):
             x = list_copier[amount].split(",")
-            Product(x[1], x[2], x[0]) #print(f"{x} <- x")
+            Product(x[1], x[2], x[3], x[0]) #print(f"{x} <- x")
         print("Loaded Successfully") # actually 100% is not true, would need to do properly just want some feedback from the function for now
-        if init_load:
+        if init_load == False:
             fm.fake_input()
 
 # RANDOM PRODUCT METHODS #########################################
@@ -377,7 +378,7 @@ def main_menu():
 
         # [L] L - LOAD (HIDDEN - well it should be ok jeez)
         elif user_menu_input == "L" or user_menu_input == "l":
-            Product.load_list_from_file()
+            Product.load_list_from_file(False)
 
         # [0] QUIT THE MENU / LOOP
         elif user_menu_input == "0":
@@ -433,7 +434,7 @@ def settings_submenu(disp_size):
 
     # [5] LOAD FROM FILE
         elif user_submenu_input == "5":
-            Product.load_list_from_file()
+            Product.load_list_from_file(False)
 
     # [0] BACK / RETURN TO MAIN MENU
         elif user_submenu_input == "0":
@@ -513,8 +514,28 @@ def print_submenu(disp_size):
             print("Input Error - Returning To Products Menu")
             break
 
-## GENERAL FUNCTIONS #######################################################################################################################################################
 
+## CREATE NEW FUNCTIONS #######################################################################################################################################################
+
+def create_new_product(disp_size):
+    fm.format_display(disp_size)
+    print(f"Create New Product\n{fm.print_dashes(return_it=True)}")
+    name = input(f"Enter A Name For Product {Product.count_products_list(Product) + 1} : ")
+    # CONVERT PRICE IN POUNDS TO FLOAT, IF DOESNT WORK THEN GO AGAIN
+    price_in_pounds = get_price()
+    quantity = input(f"Enter The Quantity For {name.title()} : ")
+    fm.format_display(disp_size)
+    # CREATE NEW INSTANCE OF PRODUCT WITH USER GIVEN NAME (runs print confirms to user, etc)
+    Product(name, price_in_pounds, quantity)
+    # FOR PRINTING BACK 0s TO THE USER, USES THE LEN OF THE STR OF THE LEN OG PRODUCT NUMBERS AND USES IT AS AN INDEX TO SLICE FROM THE END OF THE STRING
+    trim_by = lambda x : 4 - len(str(len(x)))
+    print(f"Product #{str(Product.get_last_product_number(Product)[trim_by(Product.products_list):])} Added Sucessfully")
+    fm.print_dashes()
+
+# both so validation, both so reusable
+# get quantity
+# get name
+    
 def get_price():
     the_price = "1"
     while the_price != "0":
@@ -536,20 +557,7 @@ def get_price():
     print(f"Returning {x}{type(x)}")
     return(float(price_in_pounds))
 
-
-def create_new_product(disp_size):
-    fm.format_display(disp_size)
-    print(f"Create New Product\n{fm.print_dashes(return_it=True)}")
-    name = input(f"Enter A Name For Product {Product.count_products_list(Product) + 1} : ")
-    # CONVERT PRICE IN POUNDS TO FLOAT, IF DOESNT WORK THEN GO AGAIN
-    price_in_pounds = get_price()
-    fm.format_display(disp_size)
-    # CREATE NEW INSTANCE OF PRODUCT WITH USER GIVEN NAME (runs print confirms to user, etc)
-    Product(name, price_in_pounds)
-    # FOR PRINTING BACK 0s TO THE USER, USES THE LEN OF THE STR OF THE LEN OG PRODUCT NUMBERS AND USES IT AS AN INDEX TO SLICE FROM THE END OF THE STRING
-    trim_by = lambda x : 4 - len(str(len(x)))
-    print(f"Product #{str(Product.get_last_product_number(Product)[trim_by(Product.products_list):])} Added Sucessfully")
-    fm.print_dashes()
+## GENERAL FUNCTIONS #######################################################################################################################################################
 
 def get_user_yes_true_or_no_false():
     # needs try except validation probably as tho this should cover some cases it won't cover all/enough?
