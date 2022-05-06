@@ -1,6 +1,8 @@
+from numpy import full
 import format_random_v2_00 as fm
 import csv
 import re
+import random
 #import time as t
 
 ## LAST STABLE STORAGE VERSION v1.05
@@ -47,18 +49,40 @@ class Product:
 
 # PRINT PRODUCTS METHODS ######################################## 
 
+
+# v8 print - pagination by price
+    def paginated_print_by_price(self, disp_size: int=22, rows: int=4):
+        def generate_index_price_string(self):
+            return((f"{i+1}",f"{p.price_gbp}") for i,p in enumerate(self.products_list))
+        x = generate_index_price_string(self)
+        print(x)
+        def print_all_products_by_index(self):
+            full_list = []
+            for i, p in enumerate(self.products_list):
+                full_list.append(((i+1),(p.price_gbp)))
+                #full_list.append(((f"[{i+1}]"),(f"{p.price_gbp}")))
+            return(full_list)
+        y = print_all_products_by_index(self)
+        print(y)
+        print("\n\n\nSORTED")
+        final_sorted_price_tuple = sorted(y,key=lambda x:x[1], reverse=True)
+        print(type(final_sorted_price_tuple[0]))
+        print(type(final_sorted_price_tuple[1]))
+        print(type(final_sorted_price_tuple[1][0]))
+        print(type(final_sorted_price_tuple[1][1]))
+        print(*(x for x, _ in final_sorted_price_tuple))
+        ###### JUST DISPLAY AS LIST IN CHUNKS, DONE ENOUGH FANCY DISPLAY THATS ENOUGH LOL!
+
+
+
+
     # v6 print - pagination
     def paginated_print(self, disp_size: int=22, rows: int=4):
         try:
             user_wants_page = 1 # initialises the loop
             # whole method is this loop, obvs not ideal 
             while user_wants_page != "0":
-                # top printout
-                fm.format_display(disp_size)
-                print(f"Sexy AF Pagniation - Dynamic Page Size\nCurrently X Page Items, Approx XXXX Products\n(also uses index notation)\n{fm.print_dashes(return_it=True)}\n")
-                # note the reason to point out uses index notation is for deleting and displaying etc this is best, thats just what indexing is for, but product numbers is more like a unique identifier that isn't the name incase it was required which im sure there are irl cases for
-                print(f"Total Amount of Products In The List = {len(Product.products_list)}\n")
-                usable_screen = int(disp_size) - 8
+                usable_screen = int(disp_size) - 11
                 ipl = usable_screen # max amounts of items that can be in one vertical line
                 ipp = ipl * rows # items per page = max amount of items on the page, the vertical list multiplied by the amount of rows
                 #rows = 5 # var for readability and incase wanna change for smaller sized screens not baking into equation (ik actually is cols lol) - also is now a setting btw
@@ -69,6 +93,11 @@ class Product:
                 pages_print = [] # bottom pages display string
                 pages_as_numbers_listed = [] # the amount of pages (e.g. 20 items with 5 items_per_page = [1,2,3,4], 66 items with 10 ipp = [1,2,3,4,5,6,7] (7th is the remainder which it includes here yes)
                 last_page = [] # the single list with indexes of the last page (basically display_to_use but the end of it)
+                # top printout
+                fm.format_display(disp_size)
+                print(f"Sexy AF Pagniation - Dynamic Page Size\nCurrently {ipp} Items Per Page, {len(self.products_list)} Total Products\n{fm.print_dashes(return_it=True)}\n") # note the reason to point out uses index notation is for deleting and displaying etc this is best, thats just what indexing is for, but product numbers is more like a unique identifier that isn't the name incase it was required which im sure there are irl cases for
+                print(f"[Index] Product (quantity) - £Price\n")
+                
                 if remaining_items != 0: #print(f"usable_screen={usable_screen}\n,ipl={ipl}\n,ipp={ipp}\n,full_pages={full_pages}\n,remaining_items={remaining_items}\n,")
                     page_nos = full_pages + 1
                 else:
@@ -127,7 +156,7 @@ class Product:
                     for prdct in the_line:
                         prdct + current_page_number
                         current_string = (f"{prdct} {self.products_list[prdct].name} {self.products_list[prdct].price_gbp} {self.products_list[prdct].quantity} ")
-                        spaces = 42 - (len(current_string))
+                        spaces = 48 - (len(current_string))
                         spaces_string = ""
                         if int(prdct) + 1 == 10: # adjust for the extra character in the display by minusing one from the spaces on the end
                             spaces -= 1
@@ -139,23 +168,34 @@ class Product:
                             spaces -= 1
                         if int(prdct) + 1 == 100000:
                             spaces -= 1
-                        for x in range(spaces):
+                        for x in range(spaces - 5):
                             spaces_string += " "
-                        print_string += (f"[ {int(prdct) + 1} ] {self.products_list[prdct].name} - £{self.products_list[prdct].price_gbp} ({self.products_list[prdct].quantity}) {spaces_string}")
+                        print_string += (f"[ {int(prdct) + 1} ] {self.products_list[prdct].name} {spaces_string} ({self.products_list[prdct].quantity}) - £{self.products_list[prdct].price_gbp}       ")
                     print(print_string)
                     # yield back as tuples with index value, check as recieving yield, if index value not in the indexes that would be in the current page (0-59,60-119...)
-                print("")
-                pages_print.insert(0,"PAGE NUMBERS :")
-                print(*[p for p in pages_print])
-                print("")
-                user_wants_page = input("Enter Page Number : ")
+                cpage = int((current_page_number + ipp) / ipp)
+                # move this to format random
+                def return_one_line_art():
+                    one_line_ascii_art_list = ["̿' ̿'\̵͇̿̿\з=(◕_◕)=ε/̵͇̿̿/'̿'̿ ̿  NOBODY MOVE!","( ͡° ͜ʖ ͡°) *staring intensifies*","(╯°□°)--︻╦╤─ - - - WATCH OUT HE'S GOT A GUN","(⌐■_■)--︻╦╤─ - - - GET DOWN MR PRESIDENT","┻━┻︵  \(°□°)/ ︵ ┻━┻ FLIPPIN DEM TABLES","(ノಠ益ಠ)ノ彡︵ ┻━┻︵ ┻━┻ NO TABLE IS SAFE","ʕつಠᴥಠʔつ ︵ ┻━┻ HIDE YO KIDS HIDE YO TABLES","(ಠ_ಠ)┌∩┐ BYE BISH","(ง •̀_•́)ง FIGHT ME FOKER!","[¬º-°]¬  [¬º-°]¬ ZOMBIES RUN!","(╭ರ_•́) CURIOUSER AND CURIOUSER","つ ◕_◕ ༽つ つ ◕_◕ ༽つ TAKE MY ENERGY","༼つಠ益ಠ༽つ ─=≡ΣO)) HADOUKEN!"]
+                    return(one_line_ascii_art_list[random.randint(0, len(one_line_ascii_art_list)-1)])
+                # END IN LINE FUNCTION that i should totally move 
+                if cpage > len(pages_as_numbers_listed) : print(return_one_line_art()) ############### ascii art, could do if max go back to one but prefer the easter egg
+                print("\n", end="PAGES ")
+                #pages_print.insert(0,"PAGE NUMBERS :")
+                highlight_page = lambda h : f"[[ {h} ]]" if h == cpage else f"[ {h} ]" # language is so mad wtf            
+                print(*[highlight_page(p) for p in pages_as_numbers_listed])
+                #print("^ page numbers ^")
+                user_wants_page = input("\nEnter Page Number (or use . to step forward +1 page) : ")
                 if user_wants_page == "0":
                     break
+                elif user_wants_page == ".":
+                    user_wants_page = int((current_page_number + ipp) / ipp) + 1
+                    #print(f"Page - {user_wants_page}")
                 else:
                     user_wants_page = int(user_wants_page)
         except ValueError as e:
             print("STOP PRESSING ENTER! (or maybe this is bad ux duhhhh!") # "No... it's the children who are wrong" https://knowyourmeme.com/memes/am-i-so-out-of-touch
-
+ 
 
     # v5 print - items per line
     def items_per_list_print(self, disp_size: int=22):
@@ -239,7 +279,7 @@ class Product:
         # need if empty or None validation
         f = open(file_name, "w")
         for i, _ in enumerate(self.products_list):
-            f.write(self.products_list[i].product_number + "," + self.products_list[i].name + "," + str(self.products_list[i].price_gbp) + "," + self.products_list[i].quantity + "\n")
+            f.write(str(self.products_list[i].product_number) + "," + self.products_list[i].name + "," + str(self.products_list[i].price_gbp) + "," + str(self.products_list[i].quantity) + "\n")
         f.close
 
     def save_all_products_as_csv(self, file_name:str = "x_main_products_list.csv"):
@@ -290,7 +330,7 @@ class Product:
 
 def main_menu():
     disp_size = 22
-    rows = 5
+    rows = 3
     # MAKE A SCREEN SIZE DISPLAY AND FUNCTION THAT PRINTS LINES, USERS SELECTS COMFORT, AND THEN LINES ARE SET TO THIS (display as a class holy shit)
     user_menu_input = 1
     go_again = False
@@ -345,7 +385,7 @@ def main_menu():
             fm.format_display(disp_size)
             print(f"Update Product Name\n(also uses index notation)\n{fm.print_dashes(return_it=True)}")
             print(f"Amount of Products = {len(Product.products_list)}\n")
-            Product.items_per_list_print(Product, disp_size)
+            Product.paginated_print(Product, disp_size, rows)
             print(" ")
             fm.print_dashes()
             to_update = int(input("Enter Number To Update : "))
@@ -362,7 +402,7 @@ def main_menu():
             
         # [S] SETTINGS SUB MENU
         elif user_menu_input == "S" or user_menu_input == "s":
-            settings_submenu(disp_size)
+            disp_size, rows = settings_submenu(disp_size, rows)
                         
         # [6] -
         elif user_menu_input == "6":
@@ -370,7 +410,7 @@ def main_menu():
            
         # [7] -  
         elif user_menu_input == "7":
-            pass
+            Product.paginated_print_by_price(Product, disp_size, rows)
 
         # [8] -
         elif user_menu_input == "8":
@@ -399,7 +439,7 @@ def main_menu():
 
 ## SETTINGS SUBMENU #######################################################################################################################################################
 
-def settings_submenu(disp_size):
+def settings_submenu(disp_size, rows):
     user_submenu_input = "1"
     while user_submenu_input != "0":
         # PRINT THE SUB MENU  
@@ -439,10 +479,14 @@ def settings_submenu(disp_size):
     # [0] BACK / RETURN TO MAIN MENU
         elif user_submenu_input == "0":
             print("Returning To Products Menu")
+            #return(disp_size, rows)
             break
         else:
             print("Input Error - Returning To Products Menu")
+            #return(disp_size, rows)
             break
+    print("Saving Settings...")
+    return(disp_size, rows)
 
 ## PRINT SUBMENU #######################################################################################################################################################
 
@@ -573,16 +617,16 @@ def get_user_yes_true_or_no_false():
 def quick_add_ten_products(disp_size):
     fm.format_display(disp_size)
     print(f"Generating Asscream...\n{fm.print_dashes(return_it=True)}\n")
-    Product("Asscream",1.99)
-    Product("Jumbo Size Asscream",2.99)
-    Product("Limited Edition Asscream",1.50)
-    Product("Asscream 4 Pack",1.00)
-    Product("Asscream Sport",4.99)
-    Product("Asscream FOR KIDS!",6.99)
-    Product("Asscream Lite",2.29)
-    Product("Asscream ProGlide",1.15)
-    Product("Asscream Luxe",31.10)
-    Product("Asscream Mini",1.10)
+    Product("Asscream",1.99,100)
+    Product("Jumbo Size Asscream",2.99,100)
+    Product("Limited Edition Asscream",1.50,100)
+    Product("Asscream 4 Pack",1.00,100)
+    Product("Asscream Sport",4.99,100)
+    Product("Asscream FOR KIDS!",6.99,100)
+    Product("Asscream Lite",2.29,100)
+    Product("Asscream ProGlide",1.15,100)
+    Product("Asscream Luxe",31.10,100)
+    Product("Asscream Mini",1.10,100)
     print("")
     print("10 Asscreams Added")
     print(f"{len(Product.products_list)} Asscreams Total\n")
@@ -591,15 +635,15 @@ def quick_add_ten_products(disp_size):
 
 def quick_add_some_products(inc_by:int):
     for i in range(inc_by):
-        Product(f"Asscream [{i}]",6.99)
+        Product(f"Ass[{i}]Cream",6.09,609)
     fm.format_display(20)
 
 def format_screen(disp_size:int): 
     user_submenu_input = "1"
     while user_submenu_input != "0":
         print(*[x+9 for x in reversed(range(45))], sep="\n")
-        print(f"Current Display Size = {disp_size}")
-        print("Recommended Display Size = 26")
+        print(f"Current Display Size = {disp_size} < ENSURE THESE MATCH! (remember 0 to reset)") 
+        print("Recommended Display Size = 30+")
         print("Recommended Minimum Display Size = 16") ## 16 gets 30 items comfortably (per line) without overlap or need for pagination so start here (15 had mad overlap)
         fm.print_dashes()
         print("Adjust The Display Then Enter [ 0 ] To Reset The Display Counter To See The Numbers")
@@ -615,9 +659,10 @@ def format_screen(disp_size:int):
 def set_display_rows(rows: int):
     # to improve that just make the amount of spaces dynamic and trim the end of long strings to fit uniformly
     # N0TE! - should trim the end of long strings anyway btw!
-    print("Choose How Many Columns To Display In Menus (3 - 4)")
-    print("Max Input : 4 Columns (tbc)") # used to be 5 until price etc so updating for those changes tho no really tested, hardly worth it
-    rows = int(input("Enter A Number Between 1 and 4 : "))
+    fm.format_display()
+    print("Choose How Many Columns To Display In Menus (1 - 3)")
+    print(f"Max Columns = 3, Recommended Columns = 3, Current = {rows})") # used to be 5 until price etc so updating for those changes tho no really tested, hardly worth it
+    rows = int(input("Enter A Number Between 1 and 3 : "))
     return(rows)
 
 # DRIVER
