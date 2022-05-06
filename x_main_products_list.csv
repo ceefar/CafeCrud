@@ -1,11 +1,22 @@
-product_number,product_name,price_gbp
-00001,Asscream,1.99
-00002,Jumbo Size Asscream,2.99
-00003,Limited Edition Asscream,1.50
-00004,Asscream 4 Pack,1.00
-00005,Asscream Sport,4.99
-00006,Asscream FOR KIDS!,6.99
-00007,Asscream Lite,2.29
-00008,Asscream ProGlide,1.15
-00010,Asscream Mini,1.10
-00011,Asscream For Women,21.49
+product_number,product_name,price_gbp,quantity
+00001,Asscream,1.99,10
+00002,Jumbo Size Asscream,2.99,15
+00003,Limited Edition Asscream,1.50,9
+00004,Asscream 4 Pack,5.90,500
+00005,Asscream Sport,4.99,20
+00006,Asscream FOR KIDS!,69.99,2
+00007,Asscream Lite,2.29,25
+00008,Asscream ProGlide,1.15,2000
+00010,Asscream Mini,1.10,20
+00011,Asscream For Women,21.49,0
+00001,Asscream Classic,1.99,101
+00002,King Size Asscream,2.99,200
+00003,Limited Edition Asscream,1.50,202
+00004,Asscream 8 Pack,10.00,100
+00005,Asscream NitroSport,4.99,50
+00006,Asscream : Babies & Toddlers,6.99,20
+00007,Asscream Portable,2.29,20
+00008,Asscream ProGlide v2,1.15,200
+00010,Asscream Mini Plus,1.10,1200
+00011,Asscream For Men,21.49,1
+00021,Asscream Pride Edition,69.69,69
