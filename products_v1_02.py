@@ -127,7 +127,7 @@ class Product:
                     for prdct in the_line:
                         prdct + current_page_number
                         current_string = (f"{prdct} {self.products_list[prdct].name} {self.products_list[prdct].price_gbp} {self.products_list[prdct].quantity} ")
-                        spaces = 42 - (len(current_string))
+                        spaces = 48 - (len(current_string))
                         spaces_string = ""
                         if int(prdct) + 1 == 10: # adjust for the extra character in the display by minusing one from the spaces on the end
                             spaces -= 1
@@ -139,9 +139,9 @@ class Product:
                             spaces -= 1
                         if int(prdct) + 1 == 100000:
                             spaces -= 1
-                        for x in range(spaces):
+                        for x in range(spaces - 5):
                             spaces_string += " "
-                        print_string += (f"[ {int(prdct) + 1} ] {self.products_list[prdct].name} - £{self.products_list[prdct].price_gbp} ({self.products_list[prdct].quantity}) {spaces_string}")
+                        print_string += (f"[ {int(prdct) + 1} ] {self.products_list[prdct].name} {spaces_string} ({self.products_list[prdct].quantity}) - £{self.products_list[prdct].price_gbp}       ")
                     print(print_string)
                     # yield back as tuples with index value, check as recieving yield, if index value not in the indexes that would be in the current page (0-59,60-119...)
                 print("")
@@ -155,7 +155,7 @@ class Product:
                     user_wants_page = int(user_wants_page)
         except ValueError as e:
             print("STOP PRESSING ENTER! (or maybe this is bad ux duhhhh!") # "No... it's the children who are wrong" https://knowyourmeme.com/memes/am-i-so-out-of-touch
-
+ 
 
     # v5 print - items per line
     def items_per_list_print(self, disp_size: int=22):
