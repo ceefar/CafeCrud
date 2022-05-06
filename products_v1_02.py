@@ -1,3 +1,4 @@
+from numpy import full
 import format_random_v2_00 as fm
 import csv
 import re
@@ -47,6 +48,33 @@ class Product:
     # END __INIT__  
 
 # PRINT PRODUCTS METHODS ######################################## 
+
+
+# v8 print - pagination by price
+    def paginated_print_by_price(self, disp_size: int=22, rows: int=4):
+        def generate_index_price_string(self):
+            return((f"{i+1}",f"{p.price_gbp}") for i,p in enumerate(self.products_list))
+        x = generate_index_price_string(self)
+        print(x)
+        def print_all_products_by_index(self):
+            full_list = []
+            for i, p in enumerate(self.products_list):
+                full_list.append(((i+1),(p.price_gbp)))
+                #full_list.append(((f"[{i+1}]"),(f"{p.price_gbp}")))
+            return(full_list)
+        y = print_all_products_by_index(self)
+        print(y)
+        print("\n\n\nSORTED")
+        final_sorted_price_tuple = sorted(y,key=lambda x:x[1], reverse=True)
+        print(type(final_sorted_price_tuple[0]))
+        print(type(final_sorted_price_tuple[1]))
+        print(type(final_sorted_price_tuple[1][0]))
+        print(type(final_sorted_price_tuple[1][1]))
+        print(*(x for x, _ in final_sorted_price_tuple))
+        ###### JUST DISPLAY AS LIST IN CHUNKS, DONE ENOUGH FANCY DISPLAY THATS ENOUGH LOL!
+
+
+
 
     # v6 print - pagination
     def paginated_print(self, disp_size: int=22, rows: int=4):
@@ -382,7 +410,7 @@ def main_menu():
            
         # [7] -  
         elif user_menu_input == "7":
-            pass
+            Product.paginated_print_by_price(Product, disp_size, rows)
 
         # [8] -
         elif user_menu_input == "8":
