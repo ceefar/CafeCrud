@@ -54,6 +54,7 @@ class Product:
             # whole method is this loop, obvs not ideal 
             while user_wants_page != "0":
                 # top printout
+                print(f"Rows = {rows}")
                 fm.format_display(disp_size)
                 print(f"Sexy AF Pagniation - Dynamic Page Size\nCurrently X Page Items, Approx XXXX Products\n(also uses index notation)\n{fm.print_dashes(return_it=True)}\n")
                 # note the reason to point out uses index notation is for deleting and displaying etc this is best, thats just what indexing is for, but product numbers is more like a unique identifier that isn't the name incase it was required which im sure there are irl cases for
@@ -290,7 +291,7 @@ class Product:
 
 def main_menu():
     disp_size = 22
-    rows = 5
+    rows = 3
     # MAKE A SCREEN SIZE DISPLAY AND FUNCTION THAT PRINTS LINES, USERS SELECTS COMFORT, AND THEN LINES ARE SET TO THIS (display as a class holy shit)
     user_menu_input = 1
     go_again = False
@@ -362,7 +363,7 @@ def main_menu():
             
         # [S] SETTINGS SUB MENU
         elif user_menu_input == "S" or user_menu_input == "s":
-            settings_submenu(disp_size)
+            disp_size, rows = settings_submenu(disp_size, rows)
                         
         # [6] -
         elif user_menu_input == "6":
@@ -399,7 +400,7 @@ def main_menu():
 
 ## SETTINGS SUBMENU #######################################################################################################################################################
 
-def settings_submenu(disp_size):
+def settings_submenu(disp_size, rows):
     user_submenu_input = "1"
     while user_submenu_input != "0":
         # PRINT THE SUB MENU  
@@ -439,10 +440,14 @@ def settings_submenu(disp_size):
     # [0] BACK / RETURN TO MAIN MENU
         elif user_submenu_input == "0":
             print("Returning To Products Menu")
+            #return(disp_size, rows)
             break
         else:
             print("Input Error - Returning To Products Menu")
+            #return(disp_size, rows)
             break
+    print("Saving Settings...")
+    return(disp_size, rows)
 
 ## PRINT SUBMENU #######################################################################################################################################################
 
@@ -573,16 +578,16 @@ def get_user_yes_true_or_no_false():
 def quick_add_ten_products(disp_size):
     fm.format_display(disp_size)
     print(f"Generating Asscream...\n{fm.print_dashes(return_it=True)}\n")
-    Product("Asscream",1.99)
-    Product("Jumbo Size Asscream",2.99)
-    Product("Limited Edition Asscream",1.50)
-    Product("Asscream 4 Pack",1.00)
-    Product("Asscream Sport",4.99)
-    Product("Asscream FOR KIDS!",6.99)
-    Product("Asscream Lite",2.29)
-    Product("Asscream ProGlide",1.15)
-    Product("Asscream Luxe",31.10)
-    Product("Asscream Mini",1.10)
+    Product("Asscream",1.99,100)
+    Product("Jumbo Size Asscream",2.99,100)
+    Product("Limited Edition Asscream",1.50,100)
+    Product("Asscream 4 Pack",1.00,100)
+    Product("Asscream Sport",4.99,100)
+    Product("Asscream FOR KIDS!",6.99,100)
+    Product("Asscream Lite",2.29,100)
+    Product("Asscream ProGlide",1.15,100)
+    Product("Asscream Luxe",31.10,100)
+    Product("Asscream Mini",1.10,100)
     print("")
     print("10 Asscreams Added")
     print(f"{len(Product.products_list)} Asscreams Total\n")
@@ -591,14 +596,14 @@ def quick_add_ten_products(disp_size):
 
 def quick_add_some_products(inc_by:int):
     for i in range(inc_by):
-        Product(f"Asscream [{i}]",6.99)
+        Product(f"Ass[{i}]Cream",6.09,609)
     fm.format_display(20)
 
 def format_screen(disp_size:int): 
     user_submenu_input = "1"
     while user_submenu_input != "0":
         print(*[x+9 for x in reversed(range(45))], sep="\n")
-        print(f"Current Display Size = {disp_size}")
+        print(f"Current Display Size = {disp_size} < ENSURE THESE MATCH! (remember 0 to reset)") 
         print("Recommended Display Size = 26")
         print("Recommended Minimum Display Size = 16") ## 16 gets 30 items comfortably (per line) without overlap or need for pagination so start here (15 had mad overlap)
         fm.print_dashes()
@@ -615,9 +620,10 @@ def format_screen(disp_size:int):
 def set_display_rows(rows: int):
     # to improve that just make the amount of spaces dynamic and trim the end of long strings to fit uniformly
     # N0TE! - should trim the end of long strings anyway btw!
-    print("Choose How Many Columns To Display In Menus (3 - 4)")
-    print("Max Input : 4 Columns (tbc)") # used to be 5 until price etc so updating for those changes tho no really tested, hardly worth it
-    rows = int(input("Enter A Number Between 1 and 4 : "))
+    fm.format_display()
+    print("Choose How Many Columns To Display In Menus (1 - 3")
+    print(f"Max Columns = 3, Recommended Columns = 3, Current = {rows})") # used to be 5 until price etc so updating for those changes tho no really tested, hardly worth it
+    rows = int(input("Enter A Number Between 1 and 3 : "))
     return(rows)
 
 # DRIVER
