@@ -1,4 +1,4 @@
-from numpy import full
+#from numpy import full
 import format_random_v2_00 as fm
 import csv
 import re
@@ -50,7 +50,7 @@ class Product:
 # PRINT PRODUCTS METHODS ######################################## 
 
 
-# v8 print - pagination by price
+# v7 print - pagination by price to do eventually cba rn
     def paginated_print_by_price(self, disp_size: int=22, rows: int=4):
         def generate_index_price_string(self):
             return((f"{i+1}",f"{p.price_gbp}") for i,p in enumerate(self.products_list))
@@ -72,8 +72,6 @@ class Product:
         print(type(final_sorted_price_tuple[1][1]))
         print(*(x for x, _ in final_sorted_price_tuple))
         ###### JUST DISPLAY AS LIST IN CHUNKS, DONE ENOUGH FANCY DISPLAY THATS ENOUGH LOL!
-
-
 
 
     # v6 print - pagination
@@ -264,6 +262,17 @@ class Product:
         self.products_list[to_update - 1].name = new_name
         print(f"Name Updated To {self.products_list[to_update - 1].name}")
 
+    # UPDATE ATTRIBUTE (TESTING FOR PRICE & QUANTITY)
+    def update_int_attr(self, to_update:int, the_key): 
+        current_value = getattr(self.products_list[to_update - 1], the_key)
+        print(f"Prompt For {the_key}") # already have a function that will convert this to a "nice" name 
+        if the_key != "price_gbp":
+            new_value = int(input(f"Update {current_value} To : "))
+        elif the_key == "price_gbp":
+            new_value = get_price(self.products_list[to_update - 1].name)
+        setattr(self.products_list[to_update - 1], the_key, new_value)
+        print(f"{the_key} Updated To {new_value}")
+
 # DELETE PRODUCTS METHODS ######################################## 
 
     # DELETE
@@ -399,15 +408,23 @@ def main_menu():
             print("") 
             fm.print_dashes()
             fm.fake_input()
-            
-        # [S] SETTINGS SUB MENU
-        elif user_menu_input == "S" or user_menu_input == "s":
-            disp_size, rows = settings_submenu(disp_size, rows)
                         
-        # [6] -
+        # [6] TEST UPDATE ATTR
         elif user_menu_input == "6":
-            pass
-           
+            print(f"Update Quantity\n{fm.print_dashes(return_it=True)}")
+            print(f"Amount of Products = {len(Product.products_list)}\n")
+            Product.paginated_print(Product, disp_size, rows)
+            print(" ")
+            fm.print_dashes()
+            to_update = int(input("Enter Number To Update : "))
+            Product.update_int_attr(Product, to_update, "quantity")
+            fm.print_dashes()
+            print("Now Update The Price")
+            Product.update_int_attr(Product, to_update, "price_gbp")
+            fm.print_dashes()
+            print("Update Complete")
+            fm.fake_input()
+            
         # [7] -  
         elif user_menu_input == "7":
             Product.paginated_print_by_price(Product, disp_size, rows)
@@ -416,7 +433,11 @@ def main_menu():
         elif user_menu_input == "8":
             pass
 
-        # [L] L - LOAD (HIDDEN - well it should be ok jeez)
+        # [S] SETTINGS SUB MENU
+        elif user_menu_input == "S" or user_menu_input == "s":
+            disp_size, rows = settings_submenu(disp_size, rows)
+
+        # [L] L - LOAD (HIDDEN)
         elif user_menu_input == "L" or user_menu_input == "l":
             Product.load_list_from_file(False)
 
@@ -580,17 +601,17 @@ def create_new_product(disp_size):
 # get quantity
 # get name
     
-def get_price():
+def get_price(to_display = Product.count_products_list(Product) + 1):
     the_price = "1"
     while the_price != "0":
         #print("Please Use This Format - £12 or £12.9 or £12.90") - got it working with "12." (which is treated as 12.0) so removed
         fm.print_dashes()
-        price_in_pounds = input(f"Enter The Price (In GBP - e.g 12.99) For Product {Product.count_products_list(Product) + 1} : £")
+        price_in_pounds = input(f"Enter The Price (In GBP - e.g 12.99) For Product {to_display} : £")
         price_is_good = (re.match(r'\d+(?:\.\d{0,2})?$', price_in_pounds))
-        print(f"price is good? {price_is_good}")
+        #print(f"price is good? {price_is_good}")
         if price_is_good :
-            print(price_is_good.span())
-            print(price_is_good.group())
+            #print(price_is_good.span())
+            #print(price_is_good.group())
             the_price == "0"
             break
         else:
