@@ -72,27 +72,30 @@ class Couriers:
 
 ## CREATE NEW FUNCTIONS #######################################################################################################################################################
 
+# display function that formats the display then gives chunked running info (will be useful for update too, sure already have similar code to reuse)
 
-def create_new_courier(disp_size):
+
+def create_new_courier(disp_size):  # v2 validation, from inherent calls = needs testing + try except to be acceptable
     """Create new courier by calling appropriate functions (for validatoin) then creating new instance with the validated inputs"""
     fm.format_display(disp_size)
-    print(f"Create New Courier\n{fm.print_dashes(return_it=True)}")
-    name = get_name()
-    phone_number = get_mobile()
-    location = get_location_from_list()
-    Couriers(str(name), str(phone_number), str(location))
+    name = get_name(disp_size, True)
+    phone_number = get_mobile(disp_size)
+    location = get_location_from_list(disp_size)
+    Couriers(name.strip(), str(phone_number), str(location))
     fm.format_display()
     get_zeros = lambda x : "0"*(4 - len(str(x)))
     cr = Couriers.couriers_list[-1] # the instances's address in memory
-    print(f"Courier #{get_zeros(cr.courier_id)}{cr.courier_id} - {cr.name} Created Sucessfully")
+    print(f"{cr.name.title()} Created Sucessfully\n{fm.print_dashes(return_it=True)}\nCourier #{get_zeros(cr.courier_id)}{cr.courier_id}\nLocation : {cr.location}\nMobile : {cr.phone_number}")
     fm.print_dashes()
 
 
-def get_name():
+def get_name(disp_size, first_run = False):  # v2 validation = needs try except to be acceptable
     """Get and return name of courier with simple regex validation, not used for update but should refactor for this?"""
     invalid_name = True
     name_is_good = lambda x : re.match(r"\D[a-zA-Z]+($\s{1}|.)", x) # no digits + only a-z chars & ends with exactly one space or only a-z (needs improvement, will do for now), lmabda lets us keep expression outside of loop
     while invalid_name:
+        fm.format_display(disp_size)
+        if first_run: print(f"Create New Courier\n{fm.print_dashes(return_it=True)}\n")
         name = input("Enter Name (1 or 2 words, no special characters) : ")
         if name_is_good(name):
             print(f"Name [{name}] Validated")
@@ -102,34 +105,34 @@ def get_name():
     return(name)
 
 
-def get_location_from_list():
+def get_location_from_list(disp_size): # if take locations can create new function to update them (add/remove/rename), v3 validation = acceptable
     locations_list = ["London","Manchester","Birmingham","Bristol","Nottingham","Sheffield","Leeds","Newcastle"]
-    print(f"Choose Status To Set To Order\n{fm.print_dashes(return_it=True)}") # want order number? could be done easily enough
-    print(*(f"[{i+1}] - {location}" for i, location in enumerate(locations_list)))
-  
- 
-    fm.print_dashes()
-    user_code = int(input("Choose A Code For The Order : "))
-    if user_code == 1:
-        return("Preparing")
-    elif user_code == 2:
-        return("Out For Delivery")
-    elif user_code == 3:
-        return("Delivered")
-    elif user_code == 4:
-        return("Recieved")
-    elif user_code == 5:
-        return("Cancelled")
-    elif user_code == 6:
-        return("Scheduling")
-    else:
-        return("Error") # guna return error for debugging but ig should return preparing as default
+    fm.format_display(disp_size)
+    while locations_list:
+        wrong_val = False # in loop else doesnt reset display error info accurately
+        print(f"Choose Location For Courier\n{fm.print_dashes(return_it=True)}") 
+        print(*(f"[{i+1}] - {location}" for i, location in enumerate(locations_list)), sep="\n")
+        try:
+            user_code = int(input(f"{fm.print_dashes(return_it=True)}\nSelect A Location : "))
+        except ValueError:
+            wrong_val = True
+        if user_code > len(locations_list) or user_code <= 0:
+            fm.format_display(disp_size)
+            if wrong_val:
+                print("Try Again - Wrong Value")
+            else:
+                print("Try Again - Wrong Selection")
+        else:
+            break
+    #END WHILE
+    return(locations_list[user_code - 1])
+    
 
-
-def get_mobile():
+def get_mobile(disp_size): # v2 validation = needs try except to be acceptable
     invalid_mob = True
     mob_is_good = lambda x : re.match(r"^(07\d{8,12}|447\d{7,11})$", x) # lambda lets us keep expression outside of loop, allows 07 start or 447 start but not +
     while invalid_mob:
+        fm.format_display(disp_size, True)
         num = input("Enter Valid UK Mobile Number (no + symbol) : ")
         if mob_is_good(num):
             print("Number Validated")
