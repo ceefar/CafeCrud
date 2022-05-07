@@ -62,37 +62,86 @@ class Couriers:
 
 ## PRINT ################################
 
-    # PRINT COURIERS (basic) - one line generator
+    # PRINT COURIERS - basic formatting, one line generator 
     def generate_index_name_string(self):
         return((f"{i+1}. {p.name} (#{p.courier_id}) {p.location} {p.phone_number}") for i,p in enumerate(self.couriers_list))
 
-## END CLASS DECLARATIONS #######################################################################################################################################################
+## DELETE ###############################
+
+# DELETE
+    def select_and_delete(self, to_delete:int): #should take the input?
+        print(f"Deleting {self.couriers_list[to_delete - 1]}")
+        del self.couriers_list[to_delete - 1]
+        print("yeah... no taking that one back") # obvs dont do this lol (fun easter egg - have it happen randomly like once in every X, rare enough that it doesnt happen first time tho?)
+
+## UPDATE ###############################
+
+    # UPDATE COURIERS - attempting via loop sent the_key to update appropriate the_value
+    def update_attr_by_key(self, to_update:int, the_key, disp_size): 
+        current_value = getattr(self.couriers_list[to_update - 1], the_key)
+        print(f"Prompt For {the_key}") # already have a function that will convert this to a "nice" name 
+        if the_key == "name":
+            new_value = get_name(disp_size)# send existing value so can display it beforehand? int(input(f"Update {current_value} To : "))
+        elif the_key == "phone_number":
+            new_value = get_mobile(disp_size) #get_price(self.products_list[to_update - 1].name)
+        elif the_key == "location":
+            new_value = get_location_from_list(disp_size)
+        setattr(self.couriers_list[to_update-1], the_key, new_value)
+        print(f"{the_key} Updated To {new_value}")
+
+## END CLASS DECLARATIONS #####################################################################################################################################################
 
 
 
-## CREATE NEW FUNCTIONS #######################################################################################################################################################
+## DELETE COURIER FUNCTIONS #######################################################################################################################################################
 
-# display function that formats the display then gives chunked running info (will be useful for update too, sure already have similar code to reuse)
+
+
+# do mass delete for easier testing please <- can recycle same function with a new parameter that skips the final print statement
+
+
+
+## UPDATE COURIER FUNCTIONS #######################################################################################################################################################
+
+
+def update_courier(disp_size):
+    fm.format_display(disp_size)
+    print(*(Couriers.generate_index_name_string(Couriers)), sep="\n")
+    to_update = int(input("Enter A Number To Update")) # 0 escape key pls)
+    keys_list = ["name", "phone_number", "location"]
+    for the_key in keys_list:
+        fm.format_display()
+        if get_user_yes_true_or_no_false(before_text=f"Want To Update {the_key.replace('_',' ').title()}?\n{fm.print_dashes(return_it=True)}"): # ig this is a great example of good code, needed 1 additional line to add an amazing amount of functionality, going from just looping all the attributes and forcing the user to change them, to commit confirm with relevant information displayed beforehand, again 1 line, and as an easy addition, not preplanned per se, but more implementing good habits consistently so things do "just work"
+            Couriers.update_attr_by_key(Couriers, to_update, the_key, disp_size)
+    print(f"Courier #{getattr(Couriers.couriers_list[to_update-1], 'courier_id')} Successfully Updated")
+    fm.format_display(end_with_dashes=True)
+    for the_key in keys_list:
+        print(f"{the_key.replace('_',' ').title()} : {getattr(Couriers.couriers_list[to_update-1], the_key)}")
+    fm.print_dashes()
+    fm.fake_input()
+    
+
+## CREATE NEW COURIER FUNCTIONS ###############################################################################################################################################
 
 
 def create_new_courier(disp_size):  # v2 validation, from inherent calls = needs testing + try except to be acceptable
     """Create new courier by calling appropriate functions (for validatoin) then creating new instance with the validated inputs"""
     fm.format_display(disp_size)
     name = get_name(disp_size, True)
-    phone_number = get_mobile(disp_size)
-    location = get_location_from_list(disp_size)
+    phone_number = get_mobile(disp_size, name)
+    location = get_location_from_list(disp_size, name, phone_number)
     Couriers(name.strip(), str(phone_number), str(location))
     fm.format_display()
     get_zeros = lambda x : "0"*(4 - len(str(x)))
     cr = Couriers.couriers_list[-1] # the instances's address in memory
-    print(f"{cr.name.title()} Created Sucessfully\n{fm.print_dashes(return_it=True)}\nCourier #{get_zeros(cr.courier_id)}{cr.courier_id}\nLocation : {cr.location}\nMobile : {cr.phone_number}")
+    print(f"{cr.name.title()} - Created Sucessfully\n{fm.print_dashes(return_it=True)}\nCourier #{get_zeros(cr.courier_id)}{cr.courier_id}\nLocation : {cr.location}\nMobile : {cr.phone_number}")
     fm.print_dashes()
 
 
 def get_name(disp_size, first_run = False):  # v2 validation = needs try except to be acceptable
     """Get and return name of courier with simple regex validation, not used for update but should refactor for this?"""
     invalid_name = True
-    name_is_good = lambda x : re.match(r"\D[a-zA-Z]+($\s{1}|.)", x) # no digits + only a-z chars & ends with exactly one space or only a-z (needs improvement, will do for now), lmabda lets us keep expression outside of loop
+    name_is_good = lambda x : re.match(r"\D[a-zA-Z]+($\s{1}|.)", x) # 99.999% sure this does not work anywhere near how i think it does but... no digits + only a-z chars & ends with exactly one space or only a-z (needs improvement, will do for now), lmabda lets us keep expression outside of loop
     while invalid_name:
         fm.format_display(disp_size)
         if first_run: print(f"Create New Courier\n{fm.print_dashes(return_it=True)}\n")
@@ -105,34 +154,38 @@ def get_name(disp_size, first_run = False):  # v2 validation = needs try except 
     return(name)
 
 
-def get_location_from_list(disp_size): # if take locations can create new function to update them (add/remove/rename), v3 validation = acceptable
+def get_location_from_list(disp_size, name=None, phone_number=None): # if take locations can create new function to update them (add/remove/rename), v3 validation = acceptable
     locations_list = ["London","Manchester","Birmingham","Bristol","Nottingham","Sheffield","Leeds","Newcastle"]
     fm.format_display(disp_size)
     while locations_list:
         wrong_val = False # in loop else doesnt reset display error info accurately
+        if name != None and phone_number != None:
+            print(f"{fm.print_dashes(return_it=True)}\nName : {name}\nMobile : {phone_number}\n{fm.print_dashes(return_it=True)}\n")
         print(f"Choose Location For Courier\n{fm.print_dashes(return_it=True)}") 
         print(*(f"[{i+1}] - {location}" for i, location in enumerate(locations_list)), sep="\n")
         try:
             user_code = int(input(f"{fm.print_dashes(return_it=True)}\nSelect A Location : "))
         except ValueError:
             wrong_val = True
-        if user_code > len(locations_list) or user_code <= 0:
+        if user_code > len(locations_list) or user_code <= 0: # possible edge case * (tbc)
             fm.format_display(disp_size)
             if wrong_val:
-                print("Try Again - Wrong Value")
+                print("Try Again - Wrong Value\n")
             else:
-                print("Try Again - Wrong Selection")
+                print("Try Again - Wrong Selection\n")
         else:
             break
     #END WHILE
     return(locations_list[user_code - 1])
     
 
-def get_mobile(disp_size): # v2 validation = needs try except to be acceptable
+def get_mobile(disp_size, name:str = None): # v2 validation = needs try except to be acceptable
     invalid_mob = True
     mob_is_good = lambda x : re.match(r"^(07\d{8,12}|447\d{7,11})$", x) # lambda lets us keep expression outside of loop, allows 07 start or 447 start but not +
     while invalid_mob:
         fm.format_display(disp_size, True)
+        if name: # not equal to none?
+            print(f"Name : {name}\n{fm.print_dashes(return_it=True)}\n") # else print dashes?
         num = input("Enter Valid UK Mobile Number (no + symbol) : ")
         if mob_is_good(num):
             print("Number Validated")
@@ -142,44 +195,17 @@ def get_mobile(disp_size): # v2 validation = needs try except to be acceptable
     return(num)
 
 
-def get_courier_info(self, the_key):
+def get_courier_info(self, the_key): # basically for group all above then loop it?
     pass
 
 
-# GET LOCATION SIMPLE THEN CONTINUE
-# THEN UPDATE USING KEY VALUE THING SO ONLY NEED ONE PULL LOOP
-# THEN IG IMPROVED STUFF LIKE PAGINATION? check spec tbf
-
-
-'''
-def get_price(to_display = Product.count_products_list(Product) + 1):
-    the_price = "1"
-    while the_price != "0":
-        fm.print_dashes()
-        name = input(f"Enter A Name For Product {Product.count_products_list(Product) + 1} : ")
-        price_in_pounds = input(f"Enter The Price (In GBP - e.g 12.99) For Product {to_display} : £")
-        price_is_good = (re.match(r'\d+(?:\.\d{0,2})?$', price_in_pounds))
-        #print(f"price is good? {price_is_good}")
-        if price_is_good :
-            #print(price_is_good.span())
-            #print(price_is_good.group())
-            the_price == "0"
-            break
-        else:
-            price_in_pounds = "1"
-            print("Wrong Format - Please Try Again")
-    # END WHILE
-    x = float(price_in_pounds)
-    print(f"Returning {x}{type(x)}")
-    return(float(price_in_pounds))
-'''
-
 ## MAIN MENU FUNCTIONS #######################################################################################################################################################
+
 
 def main_menu():
     disp_size = 20
     rows = 3
-    menu_string = [f"COURIERS v3.01\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n","[ 1 ] Create New", "[ 2 ] Print All Couriers", "[ - ] -", "[ - ] -", "[ - ] -", "[ - ] -", "[ 8 ] Quick Add 30", "[ 9 ] Quick Add 150", "[ S ] -", "[ L ] -", "[ 0 ] Quit\n","- - - - - - - - - - -"]
+    menu_string = [f"COURIERS v3.01\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n","[ 1 ] Create New", "[ 2 ] Print All Couriers", "[ 3 ] Update Courier", "[ - ] -", "[ - ] -", "[ - ] -", "[ 8 ] Quick Add 30", "[ 9 ] Quick Add 150", "[ S ] -", "[ L ] -", "[ 0 ] Quit\n","- - - - - - - - - - -"]
     user_menu_input = 1
     print_again = True
     while user_menu_input != "0":
@@ -202,12 +228,13 @@ def main_menu():
 
         # [2] PRINT COURIERS
         elif user_menu_input == "2":
+            fm.format_display(disp_size)
             print(*(Couriers.generate_index_name_string(Couriers)), sep="\n")
             fm.fake_input()
 
-        # [3] - 
+        # [3] UPDATE COURIERS (need to do as submenu?)
         elif user_menu_input == "3":
-            pass
+            update_courier(disp_size)
             
         # [7] -  
         elif user_menu_input == "7":
@@ -252,9 +279,9 @@ def main_menu():
 ## OTHER FUNCTIONS #######################################################################################################################################################
 
 
-def get_user_yes_true_or_no_false():
+def get_user_yes_true_or_no_false(before_text:str = "", after_text:str = ""):
     # needs try except validation probably as tho this should cover some cases it won't cover all/enough?
-    print("[ 1 ] = Yes\n[ 2 ] = No\n")
+    print(f"{before_text}\n[ 1 ] = Yes\n[ 2 ] = No\n{after_text}")
     fm.print_dashes()
     user_input = input("Your Selection : ".upper())
     if user_input == "1":
