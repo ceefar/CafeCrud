@@ -247,6 +247,12 @@ class Product:
         for i, p in enumerate(self.products_list):
             print(f"[{i+1}] - {p.name} - £{p.price_gbp}")
 
+    # print via class method test (using v2 print)
+    @classmethod
+    def print_via_class_method(cls):
+        for i, p in enumerate(cls.products_list):
+            print(f"[{i+1}] - {p.name} - £{p.price_gbp}")
+
     # v1 print - basic, by product name
     def print_all_products_by_name(self):
         for p in self.products_list:
@@ -337,8 +343,8 @@ class Product:
 
 ## MENU FUNCTIONS #######################################################################################################################################################
 
-def main_menu():
-    disp_size = 22
+def main_menu(rows, disp_size=22):
+    #disp_size = 22
     rows = 3
     # MAKE A SCREEN SIZE DISPLAY AND FUNCTION THAT PRINTS LINES, USERS SELECTS COMFORT, AND THEN LINES ARE SET TO THIS (display as a class holy shit)
     user_menu_input = 1
@@ -457,6 +463,7 @@ def main_menu():
     Product.save_all_products_as_txt(Product)
     Product.save_all_products_as_csv(Product)
     print("SAVING...")
+    return(rows, disp_size)
 
 ## SETTINGS SUBMENU #######################################################################################################################################################
 
@@ -479,7 +486,7 @@ def settings_submenu(disp_size, rows):
     # [2] QUICK ADD X PRODUCTS   
         elif user_submenu_input == "2":
             fm.format_display(disp_size)
-            print(f"Quick Add - X Products\nEnter Amount Of Products To Add (For Testing){fm.print_dashes(return_it=True)}")
+            print(f"Quick Add - X Products\nEnter Amount Of Products To Add (For Testing)\n{fm.print_dashes(return_it=True)}")
             inc_by = int(input("Enter Number (upto 100,000) : ")) # so far run for 1k, 2k, 10k?, need more tho 
             quick_add_some_products(inc_by)
             fm.fake_input()
@@ -692,7 +699,7 @@ def driver():
     Product.load_list_from_file(True)
     main_menu()
 
-driver()
+#driver()
 
 # NOTES
 #

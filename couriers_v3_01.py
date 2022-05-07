@@ -1,5 +1,6 @@
 import format_random_v2_00 as fm
 import re # from re import match - why doesnt this work wtf?
+import random
 #import csv
 
 # CLASSES ########################################
@@ -64,15 +65,26 @@ class Couriers:
 
     # PRINT COURIERS - basic formatting, one line generator 
     def generate_index_name_string(self):
-        return((f"{i+1}. {p.name} (#{p.courier_id}) {p.location} {p.phone_number}") for i,p in enumerate(self.couriers_list))
+        return((f"{i+1}. {cr.name} (#{cr.courier_id}) {cr.location} {cr.phone_number}") for i,cr in enumerate(self.couriers_list))
 
 ## DELETE ###############################
 
 # DELETE
-    def select_and_delete(self, to_delete:int): #should take the input?
-        print(f"Deleting {self.couriers_list[to_delete - 1]}")
-        del self.couriers_list[to_delete - 1]
-        print("yeah... no taking that one back") # obvs dont do this lol (fun easter egg - have it happen randomly like once in every X, rare enough that it doesnt happen first time tho?)
+    def select_and_delete(self, to_delete:int, mass_delete:bool =False): 
+        if mass_delete: # implement more guard clauses
+            z = len(Couriers.couriers_list) - to_delete
+            del self.couriers_list[z:] 
+        else:
+            def get_zeros(x): return("0"*(4 - len(str(x))))
+            cr = self.couriers_list[to_delete - 1]
+            x = random.randint(1,10)
+            if x >= 3:
+                print(f"Deleting Courier #{get_zeros(cr)}{cr.courier_id} - {cr.name}")
+            else:
+                print(f"Deleting {self.couriers_list[to_delete - 1]}")
+                print("yeah... no taking that one back")
+            del self.couriers_list[to_delete - 1]
+        # obvs dont do this lol (fun easter egg - have it happen randomly like once in every X, rare enough that it doesnt happen first time tho?)
 
 ## UPDATE ###############################
 
@@ -96,9 +108,26 @@ class Couriers:
 ## DELETE COURIER FUNCTIONS #######################################################################################################################################################
 
 
+def delete_courier(disp_size):
+    fm.format_display(disp_size)
+    print(f"Delete A Courier\n{fm.print_dashes(return_it=True)}")
+    print(*(Couriers.generate_index_name_string(Couriers)), sep="\n")  
+    to_delete = int(input(f"{fm.print_dashes(return_it=True)}\nEnter Number To Delete : "))
+    fm.format_display(disp_size)
+    # NEED COMMIT CONFIRM AND AN ESCAPE CHARACTER (0/m) pls & validatio that it is a valid number duh!!!!
+    Couriers.select_and_delete(Couriers, to_delete)
+    fm.print_dashes()
 
-# do mass delete for easier testing please <- can recycle same function with a new parameter that skips the final print statement
 
+def delete_mass_couriers(disp_size):
+    fm.format_display(disp_size)
+    print(f"Deletes X Couriers From The Bottom Of The List\n(for testing purposes)\n{fm.print_dashes(return_it=True)}")
+    print(*(Couriers.generate_index_name_string(Couriers)), sep="\n")  
+    to_delete = int(input(f"{fm.print_dashes(return_it=True)}\nEnter Amount To Delete : "))
+    fm.format_display(disp_size)
+    # NEED COMMIT CONFIRM AND AN ESCAPE CHARACTER (0/m) pls & validatio that it is a valid number duh!!!!
+    Couriers.select_and_delete(Couriers, to_delete, True)
+    fm.print_dashes()
 
 
 ## UPDATE COURIER FUNCTIONS #######################################################################################################################################################
@@ -141,7 +170,7 @@ def create_new_courier(disp_size):  # v2 validation, from inherent calls = needs
 def get_name(disp_size, first_run = False):  # v2 validation = needs try except to be acceptable
     """Get and return name of courier with simple regex validation, not used for update but should refactor for this?"""
     invalid_name = True
-    name_is_good = lambda x : re.match(r"\D[a-zA-Z]+($\s{1}|.)", x) # 99.999% sure this does not work anywhere near how i think it does but... no digits + only a-z chars & ends with exactly one space or only a-z (needs improvement, will do for now), lmabda lets us keep expression outside of loop
+    name_is_good = lambda x : re.match(r"[A-Za-z]{2,25}|\s|\.|[a-zA-Z]|[A-Za-z]{1,25}\w$", x) # actually wrote this myself so do think it works but also i mean fuck knows \D[a-zA-Z]+($\s{1}|.)
     while invalid_name:
         fm.format_display(disp_size)
         if first_run: print(f"Create New Courier\n{fm.print_dashes(return_it=True)}\n")
@@ -159,7 +188,7 @@ def get_location_from_list(disp_size, name=None, phone_number=None): # if take l
     fm.format_display(disp_size)
     while locations_list:
         wrong_val = False # in loop else doesnt reset display error info accurately
-        if name != None and phone_number != None:
+        if name is not None and phone_number is not None: # when comparing to None always use comparison not equality 
             print(f"{fm.print_dashes(return_it=True)}\nName : {name}\nMobile : {phone_number}\n{fm.print_dashes(return_it=True)}\n")
         print(f"Choose Location For Courier\n{fm.print_dashes(return_it=True)}") 
         print(*(f"[{i+1}] - {location}" for i, location in enumerate(locations_list)), sep="\n")
@@ -205,7 +234,7 @@ def get_courier_info(self, the_key): # basically for group all above then loop i
 def main_menu():
     disp_size = 20
     rows = 3
-    menu_string = [f"COURIERS v3.01\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n","[ 1 ] Create New", "[ 2 ] Print All Couriers", "[ 3 ] Update Courier", "[ - ] -", "[ - ] -", "[ - ] -", "[ 8 ] Quick Add 30", "[ 9 ] Quick Add 150", "[ S ] -", "[ L ] -", "[ 0 ] Quit\n","- - - - - - - - - - -"]
+    menu_string = [f"COURIERS v3.01\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n","[ 1 ] Create New", "[ 2 ] Print All Couriers", "[ 3 ] Update Courier", "[ 4 ] Delete A Courier", "[ 5 ] Mass Delete Couriers", "[ - ] -", "[ 8 ] Quick Add 30", "[ 9 ] Quick Add 150", "[ S ] -", "[ L ] -", "[ 0 ] Quit\n","- - - - - - - - - - -"]
     user_menu_input = 1
     print_again = True
     while user_menu_input != "0":
@@ -236,9 +265,20 @@ def main_menu():
         elif user_menu_input == "3":
             update_courier(disp_size)
             
-        # [7] -  
-        elif user_menu_input == "7":
-            pass
+        # [4] DELETE SINGLE COURIER  
+        elif user_menu_input == "4":
+            delete_courier(disp_size)
+            # QUICK MENU / DELETE AGAIN
+            print("Quick Delete Another Courier?")
+            if get_user_yes_true_or_no_false():
+                print_again = False
+                user_menu_input = "4"
+            else:
+                print_again = True
+
+        # [5] DELETE MASS COURIERS  
+        elif user_menu_input == "5":
+            delete_mass_couriers(disp_size)
 
         # [8] - QUICK ADD 30
         elif user_menu_input == "8":
@@ -323,7 +363,11 @@ def quick_add_30_couriers():
     Couriers("JoJo","07939545369","London")
     Couriers("Mojo-Jojo","07939545369","London")
 
+# can also use this for excepts/errors tbf lol
+def return_one_line_art():
+    one_line_ascii_art_list = ["̿' ̿'\̵͇̿̿\з=(◕_◕)=ε/̵͇̿̿/'̿'̿ ̿  NOBODY MOVE!","( ͡° ͜ʖ ͡°) *STARING INTENSIFIES*","(╯°□°)--︻╦╤─ - - - WATCH OUT HE'S GOT A GUN","(⌐■_■)--︻╦╤─ - - - GET DOWN MR PRESIDENT","┻━┻︵  \(°□°)/ ︵ ┻━┻ FLIPPIN DEM TABLES","(ノಠ益ಠ)ノ彡︵ ┻━┻︵ ┻━┻ NO TABLE IS SAFE","ʕつಠᴥಠʔつ ︵ ┻━┻ HIDE YO KIDS HIDE YO TABLES","(ಠ_ಠ)┌∩┐ BYE BISH","(ง •̀_•́)ง FIGHT ME FOKER!","[¬º-°]¬  [¬º-°]¬ ZOMBIES RUN!","(╭ರ_•́) CURIOUSER AND CURIOUSER","つ ◕_◕ ༽つ つ ◕_◕ ༽つ TAKE MY ENERGY","༼つಠ益ಠ༽つ ─=≡ΣO)) HADOUKEN!"]
+    return(one_line_ascii_art_list[random.randint(0, len(one_line_ascii_art_list)-1)])
 
 
 # DRIVER
-main_menu()
+#main_menu()
