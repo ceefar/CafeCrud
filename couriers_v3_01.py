@@ -131,7 +131,8 @@ class Couriers:
 
 ## END CLASS DECLARATIONS #####################################################################################################################################################
 
-
+# real quick tryna get this generator to return,
+# either by appending the load all through a loop AND/OR maybe through classmethod custom init method for creating the objects through generation
 
 ## DELETE COURIER FUNCTIONS #######################################################################################################################################################
 
