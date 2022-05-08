@@ -343,9 +343,9 @@ class Product:
 
 ## MENU FUNCTIONS #######################################################################################################################################################
 
-def main_menu(rows, disp_size=22):
-    #disp_size = 22
-    rows = 3
+def main_menu(rows=3, disp_size=22):
+    #disp_size = 20
+    #rows = 3
     # MAKE A SCREEN SIZE DISPLAY AND FUNCTION THAT PRINTS LINES, USERS SELECTS COMFORT, AND THEN LINES ARE SET TO THIS (display as a class holy shit)
     user_menu_input = 1
     go_again = False
@@ -355,7 +355,7 @@ def main_menu(rows, disp_size=22):
             # PRINT THE MENU  
             fm.format_display(disp_size)
             print(f"PRODUCTS v1.02\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n")
-            menu_string = ["[ 1 ] Create New", "[ 2 ] Select & Delete (alpha)", "[ 3 ] Print Sub Menu", "[ 4 ] Update Product Name", "[ 5 ] Sexy Pagniation", "[ - ] -", "[ - ] -", "[ S ] Settings Sub Menu", "[ L ] Load Products To Classes (alpha)", "[ 0 ] Quit\n","- - - - - - - - - - -"]
+            menu_string = ["[ 1 ] Create New", "[ 2 ] Select & Delete (alpha)", "[ 3 ] Print Sub Menu", "[ 4 ] Update Product Name", "[ 5 ] Sexy Pagniation", "[ - ] -", "[ - ] -", "[ S ] Settings Sub Menu", "[ L ] Load Products To Classes (alpha)", "[ 0 ] Main Menu\n","- - - - - - - - - - -"]
             print(*menu_string, sep="\n")
             # GET THE USERS INPUT
             user_menu_input = input("Enter Menu Selection : ")
@@ -695,11 +695,14 @@ def set_display_rows(rows: int):
 
 # DRIVER
 # should set display on start?
+
 def driver():
     Product.load_list_from_file(True)
     main_menu()
 
-#driver()
+
+if __name__ == "__main__":
+    driver()
 
 # NOTES
 #

@@ -231,7 +231,7 @@ def get_courier_info(self, the_key): # basically for group all above then loop i
 ## MAIN MENU FUNCTIONS #######################################################################################################################################################
 
 
-def main_menu():
+def main():
     disp_size = 20
     rows = 3
     menu_string = [f"COURIERS v3.01\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n","[ 1 ] Create New", "[ 2 ] Print All Couriers", "[ 3 ] Update Courier", "[ 4 ] Delete A Courier", "[ 5 ] Mass Delete Couriers", "[ - ] -", "[ 8 ] Quick Add 30", "[ 9 ] Quick Add 150", "[ S ] -", "[ L ] -", "[ 0 ] Quit\n","- - - - - - - - - - -"]
@@ -295,7 +295,7 @@ def main_menu():
 
         # [S] SETTINGS SUB MENU
         elif user_menu_input == "S" or user_menu_input == "s":
-            pass
+            print(return_one_line_art())
 
         # [L] L - LOAD (HIDDEN)
         elif user_menu_input == "L" or user_menu_input == "l":
@@ -363,11 +363,13 @@ def quick_add_30_couriers():
     Couriers("JoJo","07939545369","London")
     Couriers("Mojo-Jojo","07939545369","London")
 
+
 # can also use this for excepts/errors tbf lol
 def return_one_line_art():
     one_line_ascii_art_list = ["̿' ̿'\̵͇̿̿\з=(◕_◕)=ε/̵͇̿̿/'̿'̿ ̿  NOBODY MOVE!","( ͡° ͜ʖ ͡°) *STARING INTENSIFIES*","(╯°□°)--︻╦╤─ - - - WATCH OUT HE'S GOT A GUN","(⌐■_■)--︻╦╤─ - - - GET DOWN MR PRESIDENT","┻━┻︵  \(°□°)/ ︵ ┻━┻ FLIPPIN DEM TABLES","(ノಠ益ಠ)ノ彡︵ ┻━┻︵ ┻━┻ NO TABLE IS SAFE","ʕつಠᴥಠʔつ ︵ ┻━┻ HIDE YO KIDS HIDE YO TABLES","(ಠ_ಠ)┌∩┐ BYE BISH","(ง •̀_•́)ง FIGHT ME FOKER!","[¬º-°]¬  [¬º-°]¬ ZOMBIES RUN!","(╭ರ_•́) CURIOUSER AND CURIOUSER","つ ◕_◕ ༽つ つ ◕_◕ ༽つ TAKE MY ENERGY","༼つಠ益ಠ༽つ ─=≡ΣO)) HADOUKEN!"]
     return(one_line_ascii_art_list[random.randint(0, len(one_line_ascii_art_list)-1)])
 
 
-# DRIVER
-#main_menu()
+if __name__ == "__main__":
+    # DRIVER
+    main()

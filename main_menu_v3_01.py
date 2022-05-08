@@ -14,7 +14,7 @@ def main_menu():
         user_menu_input = input("Enter Menu Selection : ")
         # GO TO COURIERS
         if user_menu_input == "1":
-            cour.main_menu()
+            cour.main()
         # GO TO ORDERS
         elif user_menu_input == "2":
             rows, disp_size = prdct.main_menu(rows, disp_size)
