@@ -52,8 +52,9 @@ def print_main_menu():
     print(*menu_string, sep="\n")
 
 
+def driver(): #loads files, initialises app (should do save here when bounce now ig!)
+    prdct.Product.load_list_from_file(True)
+    cour.Couriers.load_via_pickle()
+    main_menu()
 
-
-
-prdct.Product.load_list_from_file(True)
-main_menu()
+driver()

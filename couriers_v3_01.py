@@ -1,6 +1,7 @@
 import format_random_v2_00 as fm
 import re # from re import match - why doesnt this work wtf?
 import random
+import pickle
 #import csv
 
 # CLASSES ########################################
@@ -101,11 +102,46 @@ class Couriers:
         setattr(self.couriers_list[to_update-1], the_key, new_value)
         print(f"{the_key} Updated To {new_value}")
 
+## SAVE LOAD ###############################
+
+    def save_objs_via_pickle(self):
+        with open("x_main_couriers_pickle", "wb") as f:
+            pickle.dump(len(self.couriers_list), f)
+            for courier in self.couriers_list:
+                pickle.dump(courier, f)
+        # end context manager
+
+    def load_via_pickle():
+        data2 = []
+        with open("x_main_couriers_pickle", "rb") as f:
+            for _ in range(pickle.load(f)):
+                data2.append(pickle.load(f))
+        print(f"printing : {Couriers.couriers_list}")
+        fm.fake_input()
+        Couriers.couriers_list = data2
+        print(Couriers.couriers_list)
+
+    def actually_load():
+        print(Couriers.couriers_list)
+        Couriers.couriers_list = loadall("x_main_couriers_pickle")
+        print(Couriers.couriers_list)
+        #with open("x_main_couriers_pickle", "wb") as f:
+        #    pickle.dump
+        #    Couriers
+
 ## END CLASS DECLARATIONS #####################################################################################################################################################
 
 
 
 ## DELETE COURIER FUNCTIONS #######################################################################################################################################################
+
+def loadall():
+        with open("x_main_couriers_pickle", "rb") as f: 
+            while True:
+                try:
+                    yield pickle.load(f)
+                except EOFError: # such a flex, force it to error then catch the error to break the loop without causing an error, then you don't need to store the len to iterate over it, and like he pointed out it returns a generator (hence the yield) which i have to get used to doing as much as possible due to its insane efficiency (not my code, i get the logic, much wow)
+                    break
 
 
 def delete_courier(disp_size):
@@ -299,8 +335,10 @@ def main():
 
         # [L] L - LOAD (HIDDEN)
         elif user_menu_input == "L" or user_menu_input == "l":
-            pass
-
+            print("load all")
+            Couriers.load_via_pickle()
+            fm.fake_input()
+        
         # [0] QUIT THE MENU / LOOP
         elif user_menu_input == "0":
             print("Aite cya")
@@ -314,6 +352,7 @@ def main():
         #    break
 
     # END WHILE
+    Couriers.save_objs_via_pickle(Couriers)
     print("SAVING...")
 
 ## OTHER FUNCTIONS #######################################################################################################################################################
