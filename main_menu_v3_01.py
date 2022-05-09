@@ -56,5 +56,6 @@ def driver(): #loads files, initialises app (should do save here when bounce now
     prdct.Product.load_list_from_file(True)
     cour.Couriers.load_via_pickle()
     main_menu()
+    
 
 driver()

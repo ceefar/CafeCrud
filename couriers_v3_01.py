@@ -121,29 +121,12 @@ class Couriers:
         Couriers.couriers_list = data2
         print(Couriers.couriers_list)
 
-    def actually_load():
-        print(Couriers.couriers_list)
-        Couriers.couriers_list = loadall("x_main_couriers_pickle")
-        print(Couriers.couriers_list)
-        #with open("x_main_couriers_pickle", "wb") as f:
-        #    pickle.dump
-        #    Couriers
-
 ## END CLASS DECLARATIONS #####################################################################################################################################################
 
 # real quick tryna get this generator to return,
 # either by appending the load all through a loop AND/OR maybe through classmethod custom init method for creating the objects through generation
 
 ## DELETE COURIER FUNCTIONS #######################################################################################################################################################
-
-def loadall():
-        with open("x_main_couriers_pickle", "rb") as f: 
-            while True:
-                try:
-                    yield pickle.load(f)
-                except EOFError: # such a flex, force it to error then catch the error to break the loop without causing an error, then you don't need to store the len to iterate over it, and like he pointed out it returns a generator (hence the yield) which i have to get used to doing as much as possible due to its insane efficiency (not my code, i get the logic, much wow)
-                    break
-
 
 def delete_courier(disp_size):
     fm.format_display(disp_size)
