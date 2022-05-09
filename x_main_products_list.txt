@@ -1,5 +1,5 @@
-00001,Asscream,1.99,100
-00002,Jumbo Size Asscream,2.99,100
+00001,Jumbo Sausage,1.99,15
+00002,XXL Sausage,2.99,5
 00003,Limited Edition Asscream,1.5,100
 00004,Asscream 4 Pack,1.0,100
 00005,Asscream Sport,4.99,100
