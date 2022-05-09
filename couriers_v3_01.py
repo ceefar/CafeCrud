@@ -145,7 +145,7 @@ class Couriers:
             for i, _ in enumerate(self.couriers_list):
                 writer.writerow({"courier_id":self.couriers_list[i].courier_id, "name":self.couriers_list[i].name, "phone_number":self.couriers_list[i].phone_number, "location":self.couriers_list[i].location, "availability":self.couriers_list[i].availability})
 
-    def load_products_via_csv():
+    def load_couriers_via_csv():
         templist = []
         # open csv and read as string
         with open("x_main_couriers_list.csv", "r") as file:
@@ -154,11 +154,11 @@ class Couriers:
                 templist.append(row.strip())
                 print(f"{row} LOADED SUCCESSFULLY")
         fm.format_display()
-        templist.pop(0)
+        templist.pop(0) # pops the header off the temp list
         #Couriers.couriers_list = templist
         for index in range(len(templist)):
             x = templist[index].split(",")
-            Couriers.csv_constructor(x[1], x[2], x[3], int(x[0]), x[4])
+            Couriers.csv_constructor(x[1], x[2], x[3], int(x[0]), x[4]) ## DUH TO TEST THIS WORKS PUT THAT CONVERT TO INT IN THE CSV CONSTRUCTOR (or duhhhhh DO THE SPLIT LOOP THERE JUST TO TEST ANYWAYS AND GIVE IT THE WHOLE TEMP LIST (then do the return loop in there and its sick, THEN could convert it to a generator and THEN ill finally figure out how to use that pickle generator lol)
 
 
 
@@ -452,5 +452,5 @@ def return_one_line_art():
 
 if __name__ == "__main__":
     # DRIVER
-    Couriers.load_products_via_csv()
+    Couriers.load_couriers_via_csv()
     main()

@@ -3,6 +3,7 @@ import format_random_v2_00 as fm
 import csv
 import re
 import random
+import csv
 #import time as t
 
 ## LAST STABLE STORAGE VERSION v1.05
@@ -59,7 +60,7 @@ class Product:
             else:
                 # if the cache has no items then its the first ite, so if its a brand new courier their number will be one (ooooo lucky you huh)
                 self.product_number = 1
-                self.product_id_cache.append(self.int(product_number))
+                self.product_id_cache.append(int(self.product_number))
             # append it to the "global" list and print back confirmation
             self.products_list.append(self)
             print(f"#{self.product_number} {self.name} ({self.quantity}) - £{self.price_gbp} Created") # TO ADD A BOOL PARAM FOR SHOWING THIS PRINT STATEMENT?  
@@ -345,6 +346,24 @@ class Product:
         if init_load == False:
             fm.fake_input()
 
+    def load_products_via_csv():
+        templist = []
+        # open csv and read as string
+        with open("x_main_products_list.csv", "r") as file:
+            reader = csv.reader(file, delimiter=",")
+            for row in file:
+                templist.append(row.strip())
+                print(f"{row} LOADED SUCCESSFULLY")
+        fm.format_display()
+        templist.pop(0) # pops the header off the temp list
+        #Product.products_list = templist
+        try:
+            for index in range(len(templist)):
+                x = templist[index].split(",")
+                Product(x[1], float(x[2]), int(x[3]), int(x[0]))
+        except IndexError:
+            fm.print_dashes()    
+
 # RANDOM PRODUCT METHODS #########################################
 
     def count_products_list(self):
@@ -468,7 +487,8 @@ def main_menu(rows=3, disp_size=22):
 
         # [L] L - LOAD (HIDDEN)
         elif user_menu_input == "L" or user_menu_input == "l":
-            Product.load_list_from_file(False)
+            Product.load_products_via_csv()
+            #Product.load_list_from_file(False)
 
         # [0] QUIT THE MENU / LOOP
         elif user_menu_input == "0":
@@ -500,6 +520,11 @@ def settings_submenu(disp_size, rows):
         print(*menu_string, sep="\n")
         # GET THE USERS INPUT
         user_submenu_input = input("Enter Your Input : ")
+        # VALIDATE NATURAL LANGUAGE (NEW! - ALPHA)
+        if grab_natural_lang(user_submenu_input) == False:
+            print("do valid thing")
+            fm.fake_input()
+            break
 
     # [1] QUICK ADD DEFAULT PRODUCTS
         if user_submenu_input == "1":
@@ -525,7 +550,8 @@ def settings_submenu(disp_size, rows):
 
     # [5] LOAD FROM FILE
         elif user_submenu_input == "5":
-            Product.load_list_from_file(False)
+            Product.load_products_via_csv()
+            #Product.load_list_from_file(False)
 
     # [0] BACK / RETURN TO MAIN MENU
         elif user_submenu_input == "0":
@@ -657,6 +683,68 @@ def get_price():
     #print(f"Returning {x}{type(x)}")
     return(float(price_in_pounds))
 
+## NEW TEST SHIT 
+
+
+def action_logger(action:str, is_done:bool):
+    #just have them relate to ints in a simple switch?
+    actions_list = []
+    if is_done == False:
+        print("logged {}")
+        actions_list.append(action)
+    else:
+        fm.fake_input()
+        print('finalise the actions and route') #its own function!
+
+
+def grab_natural_lang(input_string:str):
+    action_counter = 0
+
+    if is_natural_rows(input_string): # or natural language x or ....
+        action_logger("rows", False)
+        action_counter += 1 
+
+    if action_counter != 0:    
+        valid_natural_lang_input = True
+    else:
+        valid_natural_lang_input = False
+
+    if valid_natural_lang_input:
+        print("take the actions list and go places!")
+        fm.fake_input()
+        return(False)
+    else:
+        return(input_string) 
+        # because there was no triggered input you can just return the string to do what it was doing...
+        # you do this check on the string before a big menu input, if it validates, you skip the menu entirely!!!!!!
+
+def is_natural_rows(input_string:str):
+    if "rows" in input_string or "row" in input_string or "rw" in input_string or "rws" in input_string:
+        try: 
+            x = input_string.split()
+            da_int = int(x[1])
+            if da_int >= 4:
+                print("sorry thats too problematic")
+                fm.fake_input()
+            else:
+                print(da_int)
+                return da_int
+                fm.fake_input()
+        except(ValueError):
+            print("where int?")
+            fm.fake_input()
+            return False
+        except(IndexError):
+            print("where int tho?")
+            fm.fake_input()
+            return False
+        return True # ?! will go from "sorry..."?
+    else:
+        return False # or true obvs depending on if answers question
+
+
+
+
 ## GENERAL FUNCTIONS #######################################################################################################################################################
 
 def get_user_yes_true_or_no_false():
@@ -725,7 +813,8 @@ def set_display_rows(rows: int):
 # should set display on start?
 
 def driver():
-    Product.load_list_from_file(True)
+    Product.load_products_via_csv()
+    #Product.load_list_from_file(True)
     main_menu()
 
 
@@ -737,10 +826,7 @@ if __name__ == "__main__":
 # DEFO DEFO do want quantity and price in gbp (as price will be interesting way to use stuff like map) (and then possibly type as cool for sorting)
 # - could make something like special offer like this too right? special offer has multiple products etc
 
-
-
-
-
+# make it a class? give it states (based on where it is and what is valid) (even privileges)
 
 ## OLD INIT CODE SAVING FOR NOW JUUUUUST INCASE - can del after testing 
 

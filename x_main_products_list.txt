@@ -6,7 +6,7 @@
 6,Crabmeat,6.99,50
 7,Jumbo Potato,2.29,100
 8,Mead,6.85,100
-9,S'jirra's Famous Potato Bread,30,5
+9,S'jirra's Famous Potato Bread,30.0,5
 10,Shadowbanish Wine,45.59,4
 11,Sheperds Pie,5.99,100
 12,Smoked Baliwog Leg,10.49,100
@@ -20,14 +20,14 @@
 20,Bonemeal,1.9,100
 21,Elf Cup Cap (Small),1.99,100
 100,Wagu Dragons Tongue,112.99,5
-123,St Jhans Wort Nectar,4,100
-24,White Seed Pod,3.10,100
+123,St Jhans Wort Nectar,4.0,100
+24,White Seed Pod,3.1,100
 18,Pinarus' Prize Minotaur Horn,24.99,10
 26,Clannfear Claws,6.99,100
 27,Vampire Dust (+ sides),22.29,100
 128,Void Essence,35.99,5
 29,Emetic Russula Cap,31.1,10
-30,Refined Frost Salts,14.50,20
+30,Refined Frost Salts,14.5,20
 19,Two Number 9s,7.45,45
 22,Number 6 + Extra Dip,8.1,30
 23,Two Number 45s,11.99,15
@@ -42,3 +42,5 @@
 37,Sugar Bombs,5.5,100
 38,Insta-Mash,1.45,401
 39,Argonian Bloodwine,19.99,20
+40,Grilled Charizard,17.49,20
+41,Senzu Beans,89.5,2
