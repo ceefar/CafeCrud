@@ -13,42 +13,62 @@ import random
 
 class Product:
     products_list = [] # list of all instances of each product, is this owned (as in stored) by every object of the class? (as it could get huge tho right)
+    product_id_cache = []
 
 # OBJECT (PRODUCT) METHODS ########################################
 
 # INIT / CREATE NEW ########################################
-    def __init__(self, name:str, price_gbp:float, quantity:int, product_number:str = None): # if you want vars to be unique for each instance/object of a class, put them in init, if putting them above init changing the var will change it for ALL instances of the class
+    def __init__(self, name:str, price_gbp:float, quantity:int, product_number:int = None): # if you want vars to be unique for each instance/object of a class, put them in init, if putting them above init changing the var will change it for ALL instances of the class
         # initialising the variables for each object
-        if product_number != None:
-            self.name, self.price_gbp, self.quantity, self.product_number = name, price_gbp, quantity, product_number
-            self.products_list.append(self)
-            print(f"#{self.product_number} {self.name} £{self.price_gbp} ({self.quantity}) Loaded")
-        else:
-            self.name = name
-            self.price_gbp = price_gbp
-            self.quantity = quantity
-            def generate_initial_product_numbers():
-                # to store 1000 comfortably, 10,000 total size. (w/ pagination now stores 10,000 comfortably, 100,000 total size - in regards to terminal display)
-                p_len = lambda x : 5 - len(str(len(self.products_list)+1))
-                get_zeros = lambda : "0" * p_len(len(self.products_list)+1)
-                return(get_zeros())
-            # complete the product number with the inital zeros and then the current product number (leng of the list = 1 since not yet initialised the object)
-            if len(self.products_list) == 0: # if zero size list (so first time)
-                self.product_number = generate_initial_product_numbers() + str(len(self.products_list) + 1)
+
+        def get_valid_product_id():
+            """ if the id you want to use is in the couriers_id_cache then create a new one """
+            current_value = int(max(self.product_id_cache)) + 1 # plus one to the largest number in the id cache gives you the most valid number for the id (will not duplicate)      
+            missing_elements = [ele for ele in range(max(self.product_id_cache)+1) if ele not in self.product_id_cache and ele != 0] # get the missing elements in the list and store in in a new (temp) list
+
+            if missing_elements: # has items (so there are valid missing numbers we could use for IDs)
+                self.product_number = missing_elements[0] # use the first (lowest numbered) item in that list (of missing elements)
+            else: 
+                self.product_number = current_value # if no missing elements then just the "highest" + 1
+
+            self.product_id_cache.append(int(self.product_number)) # append the id to our cache, having cache means no duplicates, no duplicates means search by id number is plausible
+            #END IF
+        #END INLINE FUNCTION
+
+        # varaibles, set regardless of load or create (so all except id/numb)
+        self.name, self.price_gbp, self.quantity = name, price_gbp, quantity
+        
+        # for differences between loading existing and creating new
+        if product_number: # if id/numb has a value, this means you have existing data to use when creating this new object
+
+            self.product_number = int(product_number) # FUCKING BASTARD LINE, so what was happening was, when the self had no value and was being given the prod number value it was being given a string and that was causing hella issues
+
+            if self.product_number in self.product_id_cache:
+                # if there is a ID clash then update the id
+                print(f"[ Potential ID Clash ({self.product_number}) Averted ]")
+                get_valid_product_id()
             else:
-                #temp_list = []
-                #for z, _ in enumerate(self.products_list):
-                #    temp_list.append(max(self.products_list[z].product_number))
-                #print(max(temp_list))
-                self.product_number = generate_initial_product_numbers() + str(self.products_list.index(self.products_list[-1]) + 2) #print(f"The last number was? : {self.products_list.index(self.products_list[-1])}, type {type(self.products_list.index(self.products_list[-1]))}")
-                # FYI i do think this actually does solve the product numbers issue, regardless of deletes, as long as it stays running right... duh?
+                self.product_number = product_number
+                self.product_id_cache.append(int(self.product_number))
+            self.products_list.append(self)
+            print(f"#{self.product_number} {self.name} ({self.quantity}) - £{self.price_gbp} Loaded") # TO ADD A BOOL PARAM FOR SHOWING THIS PRINT STATEMENT?
+        else:
+            # you are creating from scratch, so you need a new, dynamically created product_number/id
+            if self.product_id_cache: # has items
+                get_valid_product_id()
+            else:
+                # if the cache has no items then its the first ite, so if its a brand new courier their number will be one (ooooo lucky you huh)
+                self.product_number = 1
+                self.product_id_cache.append(self.int(product_number))
             # append it to the "global" list and print back confirmation
             self.products_list.append(self)
-            print(f"#{self.product_number} - {self.name} £{self.price_gbp} Stored With {self.quantity} Items")       
-    # END __INIT__  
+            print(f"#{self.product_number} {self.name} ({self.quantity}) - £{self.price_gbp} Created") # TO ADD A BOOL PARAM FOR SHOWING THIS PRINT STATEMENT?  
+        #END IF
+        #print(Product.product_id_cache)
+    #END INIT
+
 
 # PRINT PRODUCTS METHODS ######################################## 
-
 
 # v7 print - pagination by price to do eventually cba rn
     def paginated_print_by_price(self, disp_size: int=22, rows: int=4):
@@ -316,6 +336,10 @@ class Product:
         f.close()
         for amount in range(len(list_copier)):
             x = list_copier[amount].split(",")
+            #print(f"0 = {x[0]}, type={type(x[1])}")
+            #print(f"1 = {x[1]}, type={type(x[1])}")
+            #print(f"2 = {x[2]}, type={type(x[1])}")
+            #print(f"3 = {x[3]}, type={type(x[1])}")
             Product(x[1], x[2], x[3], x[0]) #print(f"{x} <- x")
         print("Loaded Successfully") # actually 100% is not true, would need to do properly just want some feedback from the function for now
         if init_load == False:
@@ -363,7 +387,6 @@ def main_menu(rows=3, disp_size=22):
         # [1] CREATE NEW PRODUCT
         if user_menu_input == "1":
             create_new_product(disp_size) # return values are for quick menu / add again loop
-            
             # QUICK MENU / CREATE AGAIN
             print("Quick Create Another Product?\n")
             if get_user_yes_true_or_no_false():
@@ -600,20 +623,25 @@ def create_new_product(disp_size):
     # CREATE NEW INSTANCE OF PRODUCT WITH USER GIVEN NAME (runs print confirms to user, etc)
     Product(name, price_in_pounds, quantity)
     # FOR PRINTING BACK 0s TO THE USER, USES THE LEN OF THE STR OF THE LEN OG PRODUCT NUMBERS AND USES IT AS AN INDEX TO SLICE FROM THE END OF THE STRING
-    trim_by = lambda x : 4 - len(str(len(x)))
-    print(f"Product #{str(Product.get_last_product_number(Product)[trim_by(Product.products_list):])} Added Sucessfully")
+    get_zeros = lambda x : "0"*(4 - len(str(x)))
+    print(f"Product #{get_zeros(Product.get_last_product_number(Product))}{Product.get_last_product_number(Product)} Added Sucessfully")
+    #################
+    # UPDATED AS ZEROS REMOVED
+    # trim_by = lambda x : 4 - len(str(len(x)))
+    # print(f"Product #{str(Product.get_last_product_number(Product)[trim_by(Product.products_list):])} Added Sucessfully")
+    #################
     fm.print_dashes()
 
 # both so validation, both so reusable
 # get quantity
 # get name
     
-def get_price(to_display = Product.count_products_list(Product) + 1):
+def get_price():
     the_price = "1"
     while the_price != "0":
         #print("Please Use This Format - £12 or £12.9 or £12.90") - got it working with "12." (which is treated as 12.0) so removed
         fm.print_dashes()
-        price_in_pounds = input(f"Enter The Price (In GBP - e.g 12.99) For Product {to_display} : £")
+        price_in_pounds = input(f"Enter The Price (In GBP - e.g 12.99) For Product {Product.count_products_list(Product) + 1} : £")
         price_is_good = (re.match(r'\d+(?:\.\d{0,2})?$', price_in_pounds))
         #print(f"price is good? {price_is_good}")
         if price_is_good :
@@ -626,7 +654,7 @@ def get_price(to_display = Product.count_products_list(Product) + 1):
             print("Wrong Format - Please Try Again")
     # END WHILE
     x = float(price_in_pounds)
-    print(f"Returning {x}{type(x)}")
+    #print(f"Returning {x}{type(x)}")
     return(float(price_in_pounds))
 
 ## GENERAL FUNCTIONS #######################################################################################################################################################
@@ -708,3 +736,37 @@ if __name__ == "__main__":
 #
 # DEFO DEFO do want quantity and price in gbp (as price will be interesting way to use stuff like map) (and then possibly type as cool for sorting)
 # - could make something like special offer like this too right? special offer has multiple products etc
+
+
+
+
+
+
+## OLD INIT CODE SAVING FOR NOW JUUUUUST INCASE - can del after testing 
+
+'''
+        if product_number != None:
+            self.name, self.price_gbp, self.quantity, self.product_number = name, price_gbp, quantity, product_number
+            self.products_list.append(self)
+            print(f"#{self.product_number} {self.name} £{self.price_gbp} ({self.quantity}) Loaded")
+        else:
+            self.name = name
+            self.price_gbp = price_gbp
+            self.quantity = quantity
+            def generate_initial_product_numbers():
+                # to store 1000 comfortably, 10,000 total size. (w/ pagination now stores 10,000 comfortably, 100,000 total size - in regards to terminal display)
+                p_len = lambda x : 5 - len(str(len(self.products_list)+1))
+                get_zeros = lambda : "0" * p_len(len(self.products_list)+1)
+                return(get_zeros())
+            # complete the product number with the inital zeros and then the current product number (leng of the list = 1 since not yet initialised the object)
+            if len(self.products_list) == 0: # if zero size list (so first time)
+                self.product_number = generate_initial_product_numbers() + str(len(self.products_list) + 1)
+            else:
+       
+                self.product_number = generate_initial_product_numbers() + str(self.products_list.index(self.products_list[-1]) + 2) 
+                #
+            self.products_list.append(self)
+            print(f"#{self.product_number} - {self.name} £{self.price_gbp} Stored With {self.quantity} Items")       
+    # END __INIT__  
+
+'''
