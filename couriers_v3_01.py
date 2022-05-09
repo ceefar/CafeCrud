@@ -2,6 +2,7 @@ import format_random_v2_00 as fm
 import re # from re import match - why doesnt this work wtf?
 import random
 import pickle
+import csv
 #import csv
 
 # CLASSES ########################################
@@ -62,6 +63,14 @@ class Couriers:
         #END IF
     #END INIT    
 
+    # CSV CONSTRUCTOR
+    @classmethod
+    def csv_constructor(cls, name:str, phone_number:str, location:str, courier_id:int = None, availability:list = []):
+        # could strip them all here tbf (especially a to be sure and b because they probably do need it?)
+        # TEST BY, check print (shouldnt print if not in global list), then do cls.append here to see if that works, THEN and regardless, just use actually constructor in the load loop lmao!
+        return cls(name, phone_number, location, courier_id, availability)
+
+
 ## PRINT ################################
 
     # PRINT COURIERS - basic formatting, one line generator 
@@ -103,6 +112,8 @@ class Couriers:
         print(f"{the_key} Updated To {new_value}")
 
 ## SAVE LOAD ###############################
+    
+    ## PICKLES
 
     def save_objs_via_pickle(self):
         with open("x_main_couriers_pickle", "wb") as f:
@@ -119,7 +130,51 @@ class Couriers:
         print(f"printing : {Couriers.couriers_list}")
         fm.fake_input()
         Couriers.couriers_list = data2
-        print(Couriers.couriers_list)
+        #print(Couriers.couriers_list)
+
+    ## CSVs
+
+    def save_all_products_as_csv(self, file_name:str = "x_main_couriers_list.csv"):
+        with open(file_name, "w", newline="") as csvfile:
+            # set the headers for the csv            
+            fieldnames = ["courier_id", "name", "phone_number", "location", "availability"] # name:str, phone_number:str, location:str, courier_id:int, availability:list
+            # instruct the writer to write the headers
+            writer = csv.DictWriter(csvfile, delimiter=',', fieldnames= fieldnames)
+            writer.writeheader()
+            # instruct the writer to write the row
+            for i, _ in enumerate(self.couriers_list):
+                writer.writerow({"courier_id":self.couriers_list[i].courier_id, "name":self.couriers_list[i].name, "phone_number":self.couriers_list[i].phone_number, "location":self.couriers_list[i].location, "availability":self.couriers_list[i].availability})
+
+    def load_products_via_csv():
+        templist = []
+        # open csv and read as string
+        with open("x_main_couriers_list.csv", "r") as file:
+            reader = csv.reader(file, delimiter=",")
+            for row in file:
+                templist.append(row.strip())
+                print(f"{row} LOADED SUCCESSFULLY")
+        fm.format_display()
+        templist.pop(0)
+        #Couriers.couriers_list = templist
+        for index in range(len(templist)):
+            x = templist[index].split(",")
+            Couriers.csv_constructor(x[1], x[2], x[3], int(x[0]), x[4])
+
+
+
+    # HERES THE THING I DONT GET RIGHT...
+    # I CAN ACCESS THE DATA WHEN LOADING AS I LOAD TO A LIST IN CLASSES, SURE MAKES SENSE, ITS STRINGS, INTS, FLOATS, ETC STORED IN A LIST
+    # AND THO THEY WERE *CREATED* AS OBJECTS THEY STILL ARE JUST THAT DATA, SO I CAN STILL ACCESS THEM WITHOUT INSTANTIATING THEM
+    # I GET THAT, BUT... BECAUSE THEY *ARE* OBJECTS, DOES SIMPLY LOADING THEM INTO COURIERS LIST CREATE THEM AS OBJECTS?
+    # I OBVIOUSLY ASSUMED NOT, AS I HAVE RECREATED THE ACTUAL OBJECTS IN LOADS ALREADY IN OTHER MODULES AND VERSIONS
+    # BUT
+    # IF THIS WORKS, WHAT EVEN IS THE NEED FOR INSTANTIATING A CLASS IN THE FIRST PLACE? 
+    # (no direct access right?, and im assuming then that you cant access them via get attr or set attr if they havent been instantiated, despite the fact that it may seem as such because of the data that represents them being stored ahhhh)
+    # so its very much like saying, a bot goes over all ur media and messages when u die, 
+    # then they make a chat bot that seems to be just like you, knows alot of your intimate details and secrets, 
+    # practically unrecognisable, but its just ur data, its just a representation of information you had stored
+    # it is not *actually* you tho, again , just ur data...
+    # i mean ik that bit makes sense but have i got the rest right?
 
 ## END CLASS DECLARATIONS #####################################################################################################################################################
 
@@ -127,6 +182,7 @@ class Couriers:
 # either by appending the load all through a loop AND/OR maybe through classmethod custom init method for creating the objects through generation
 
 ## DELETE COURIER FUNCTIONS #######################################################################################################################################################
+
 
 def delete_courier(disp_size):
     fm.format_display(disp_size)
@@ -320,7 +376,7 @@ def main():
         # [L] L - LOAD (HIDDEN)
         elif user_menu_input == "L" or user_menu_input == "l":
             print("load all")
-            Couriers.load_via_pickle()
+            #Couriers.load_via_pickle()
             fm.fake_input()
         
         # [0] QUIT THE MENU / LOOP
@@ -336,6 +392,7 @@ def main():
         #    break
 
     # END WHILE
+    Couriers.save_all_products_as_csv(Couriers)
     Couriers.save_objs_via_pickle(Couriers)
     print("SAVING...")
 
@@ -395,4 +452,5 @@ def return_one_line_art():
 
 if __name__ == "__main__":
     # DRIVER
+    Couriers.load_products_via_csv()
     main()

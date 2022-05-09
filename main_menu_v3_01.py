@@ -43,6 +43,8 @@ def main_menu():
             print("Some Wrong Input Error Message")
     # END WHILE
     print("SAVING...")
+    prdct.Product.save_all_products_as_csv(prdct) # DO NOT HAVE MULTIPLE AT END SAVES (im sure cant hurt but still is unnecessary)
+    # BADLY NEED TRY EXCEPT SO CATCHES ERRORS AND SAVES BEFORE QUITTING A FATAL EXCEPTION!
 
 
 def print_main_menu():
@@ -54,7 +56,8 @@ def print_main_menu():
 
 def driver(): #loads files, initialises app (should do save here when bounce now ig!)
     prdct.Product.load_list_from_file(True)
-    cour.Couriers.load_via_pickle()
+    #cour.Couriers.load_via_pickle() # both are class methods and therefore i think means would be properly encapuslated (if made private) which is awesome but sure im likely missing something (is a way to fake it in python using underscore notation right?)
+    cour.Couriers.load_products_via_csv() # yh legit is actually private but just can access because python not c++ ok kl np
     main_menu()
     
 
