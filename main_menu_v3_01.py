@@ -43,8 +43,8 @@ def main_menu():
             print("Some Wrong Input Error Message")
     # END WHILE
     print("SAVING...")
-    prdct.Product.save_all_products_as_csv(prdct) # DO NOT HAVE MULTIPLE AT END SAVES (im sure cant hurt but still is unnecessary)
-    cour.Couriers.save_all_products_as_csv(cour)
+    prdct.Product.save_all_products_as_csv(prdct.Product) # DO NOT HAVE MULTIPLE AT END SAVES (im sure cant hurt but still is unnecessary)
+    cour.Couriers.save_all_products_as_csv(cour.Couriers)
     # BADLY NEED TRY EXCEPT SO CATCHES ERRORS AND SAVES BEFORE QUITTING A FATAL EXCEPTION!
 
 

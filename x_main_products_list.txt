@@ -2,7 +2,7 @@
 2,XXL Sausage,2.99,50
 3,Sweetcake,3.5,50
 4,Sweetroll,2.5,50
-5,Asscream - Chocolate,1.5,50
+5,Rolled Sweetcake,1.5,50
 6,Crabmeat,6.99,50
 7,Jumbo Potato,2.29,100
 8,Mead,6.85,100

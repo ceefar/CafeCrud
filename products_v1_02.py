@@ -742,6 +742,25 @@ def is_natural_rows(input_string:str):
     else:
         return False # or true obvs depending on if answers question
 
+#to achieve this do sequentially, check for X,
+#                                 if find X check for its modifier, 
+#                                                     if no modifier, if is still valid,
+#                                                                                     do thing, 
+#                                                                                 else,
+#                                                                                     break fully
+#                                                    if modifier
+#                                                           check if modifier is valid (i.e. 20 for rows lol), 
+#                                                                   if valid,
+#                                                                        log it
+#                                                                   if not valid (display and try again or just break (which just redisplays the current menu so yeah!))
+# 
+#   then once end
+#           unpack the actions and route in proper order, any settings actions then user actions then print actions
+#   then complete them
+#   then display it to the user (using natty lang v0.1) 
+#
+# (will have a list unpacker that puts them into the appropriate order at the end then executes just log for now duh)
+#                                            
 
 
 
