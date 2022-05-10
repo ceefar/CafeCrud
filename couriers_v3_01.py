@@ -3,7 +3,6 @@ import re # from re import match - why doesnt this work wtf?
 import random
 import pickle
 import csv
-#import csv
 
 # CLASSES ########################################
 # COURIERS CLASS #################################

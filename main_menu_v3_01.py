@@ -1,4 +1,3 @@
-from numpy import disp
 import products_v1_02 as prdct
 import couriers_v3_01 as cour
 import format_random_v2_00 as fm # for formatting display, getting random things

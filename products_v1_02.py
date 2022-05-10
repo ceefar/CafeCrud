@@ -1,12 +1,9 @@
-#from numpy import full
 import format_random_v2_00 as fm
 import csv
 import re
 import random
 import csv
-#import time as t
 
-## LAST STABLE STORAGE VERSION v1.05
 
 # CLASSES ########################################
 
