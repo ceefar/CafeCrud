@@ -334,9 +334,9 @@ def sing_til_input():
     print("")
 
 
-def get_user_yes_true_or_no_false(before_text:str = "", after_text:str = ""):
+def get_user_yes_true_or_no_false(before_text:str = "", after_text:str = "", yes:str = "Yes", no:str = "No"):
     # needs try except validation probably as tho this should cover some cases it won't cover all/enough?
-    print(f"{before_text}\n[ 1 ] = Yes\n[ 2 ] = No\n{after_text}")
+    print(f"{before_text}\n[ 1 ] = {yes}\n[ 2 ] = {no}\n{after_text}")
     print_dashes()
     user_input = input("Your Selection : ".upper())
     if user_input == "1":

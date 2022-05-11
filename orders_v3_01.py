@@ -163,8 +163,8 @@ def create_new_order(disp_size, rows):
 
         # GET PRODUCTS FOR ORDER, UPDATE QUANTITIES, & GET FINAL PRICE
         if lets_continue:
-            products_list = get_and_add_products(disp_size, rows)
-            if attached_courier == "0":
+            order_prdcts, order_cost = get_and_add_products(disp_size, rows)
+            if order_cost == "0":
                 print("Escape Key Logged")
                 lets_continue = False
             else:
@@ -268,14 +268,14 @@ def get_couriers_from_list_and_attach(disp_size, rows, name=None, phone_number=N
             else:
                 print("Try Again - Wrong Selection\n")
         elif user_input == 0: # escape key, its already been int converted btw
-            print("Uh Oh - I hate zeros")
+            print("Uhhhh... I HATE zer0s") #... but you are zeros tho
             break
         else:
             fm.print_dashes()
             cr = cour.Couriers.couriers_list[user_input - 1]    
             print(f"You Selected Courier - {cr.name}, (ID : {cr.courier_id})")
             fm.print_dashes()
-            print("Assigning This Courier To The Order Now")
+            print("Assigning This Courier To The Order Now") 
             break
     # END WHILE
     if user_input == 0:
@@ -328,28 +328,80 @@ def get_and_add_products(disp_size, rows):
                 print(f"Items : {total_basket_quant} total") # should really use the sum/count of how_many instead of len basket div 5 but meh
                 fm.print_dashes()
                 for product in order_basket:
-                    print(f"{product[3]}x {product[1]}(#{product[0]}) @ £{(product[2] / product[3]):.2f} each - £[ total]")
+                    print(f"{product[3]}x {product[1]}(#{product[0]}) @ £{(product[2] / product[3]):.2f} each - [£{product[2]} total]")
                 # commit confirm
                 fm.print_dashes()
-                yesno = fm.get_user_yes_true_or_no_false(before_text=f"Want To Add More Items\n(No = Checkout)\n{fm.print_dashes(return_it=True)}\n")
+                yesno = fm.get_user_yes_true_or_no_false(before_text=f"Want To Add More Items\n{fm.print_dashes(return_it=True)}\n", yes="Order More",no="I'm Done - Start Checkout")
                 fm.fake_input()
                 if yesno == False:
                     got_more = False
                     break
+                break
                 
+    
+    def display_updated_basket(order_basket, original_order_basket):
+        print("Looks Like Some Items Sold Out, We've Updated Your Order") # THIS WILL BE THE NEW UPDATED FINAL DISPLAY
+        for product in order_basket:
+            #a, b, c, d = product
+            print(f"{product[3]}x {product[1]}(#{product[0]}) @ £{(product[2] / product[3]):.2f} each - [£{product[2]} total]")
+            #print(a,b,c,d)
+        #
+        ### COMMIT CONFIRM THEN CLEAN UP THIS WHOLE SECTION A TAD, THEN ITS JUST -> ADD ORDER STATUS, SHUFFLE COURIERS AND RETURN PROPERLY AND IS DONE
+       ####################
+       ####################
+       ####################
+       ####################
+       ####################
+       ####################
+       ####################
+       ####################
+       ####################
+       ####################
+       ####################
+       ####################
+    
+
     print("Ok finalising your basket...")
     final_products_list = []
-    update_quants_from_basket(order_basket)
+    original_order_basket = sum(order_basket, [])
+    #print(original_order_basket)
+    #print(order_basket)
+    order_basket = update_quants_from_basket(order_basket)
+    #
+    #
+    #
+    # NEED TO UPDATE BASKET TOTAL HERE OR IN THE FUNCTION (take as arg and in there easier but less pythonic but meh)
+    # THEN ORDER BASKET ZIP THING FOR CHANGES ABOVE ()
+    
+    
+
+    final_products_quants_list = []
+
+    if order_basket is None:
+        print("order basket is none")
+        order_basket = original_order_basket
+    else:
+        display_updated_basket(order_basket, original_order_basket) #display updated basket and confirm function
     for item_info in order_basket:
-        final_products_list.append(item_info[0])
+        final_products_list.append(item_info[0]) # FOR STRICT GENERATION PROJECT
+        final_products_quants_list.append((item_info[0],item_info[3])) # NEW! -> TO RETURN 
+    
+    #print(final_products_list)
+    #print(final_products_quants_list)
+    print("Basket Total")
+    new_basket_total = 0
+    #print(basket_total)
+    for product in order_basket:
+        new_basket_total += product[2]
+    basket_total = new_basket_total
+    #print(basket_total)
 
-
-    print(f"The Item Numbers Are = {final_products_list}") #print(f"Return Value (tbc) = {order_basket[-1][0]}")   
-    print(f"Total Price For Your Order = {basket_total}")
+    print(f"The Item Numbers Being Sent Are = {final_products_quants_list}") #print(f"Return Value (tbc) = {order_basket[-1][0]}")   
+    print(f"Total Final Price For Your Order = £{basket_total:.2f}")
     
     # it that works we're gravy here for now just cont (status then done?! could move courier select but meh, also do need to confirm the quantity is updating)
     print("Returning as tuple! - dont forget to unpack on receipt")
-    return(final_products_list, basket_total) # this is just the last one (being product number) added (needs to be a list), simple for loop (or comprehension!) will do the trick
+    return(final_products_quants_list, basket_total) # this is just the last one (being product number) added (needs to be a list), simple for loop (or comprehension!) will do the trick
     
     # create only products list quickly and return it PLUS final price
     # get status
@@ -373,13 +425,33 @@ def product_basket(item_num_to_add:int, item_name_to_add:str, item_price_to_add:
 
 
 def update_quants_from_basket(order_basket):
+    made_updates = False
     for i, item in enumerate(order_basket):
+        #print(order_basket)
+        #print(item)
+        #print(prdct.Product.products_list[item[0]-1])
         how_many = int(order_basket[i][3]) # might be unnecessary to force conversion here
-        print(f"Updating Quantity For {prdct.Product.products_list[item[-1]].name}")
-        print(f"Current Quantity = {prdct.Product.products_list[item[-1]].quantity}")
-        print(f"User Wants = {how_many}")        
-        prdct.Product.products_list[item[-1]].quantity -= how_many
-        print(f"Updated Quantity = {prdct.Product.products_list[item[-1]].quantity}")
+        #print(f"Updating Quantity For {prdct.Product.products_list[item[0]-1].name}")
+        #print(f"Current Quantity = {prdct.Product.products_list[item[0]-1].quantity}")
+        #print(f"User Wants = {how_many}")
+        final_quant = (prdct.Product.products_list[item[0]-1].quantity)-(how_many)
+        #print(f"Final Quantity Will Be = {final_quant}") 
+        if final_quant < 0:
+            print(f"Uh Oh, Looks Like We Need To {0 - final_quant} From {prdct.Product.products_list[item[0]-1].name}")  
+            print(f"Updating User Basket - {order_basket}")
+            print(f"Updating Item Total - {order_basket[i][3]} + {final_quant}")
+            order_basket[i][3] + final_quant
+            made_updates = True   
+            order_basket.pop(i) 
+            # if ok then commit the change and return the order (ONLY RETURN IF VALID THEN COULD CHECK IF IS NONE ON RETURN - ACTUALLY YES AS WANT TO CONFIRM ANY UPDATES WITH THE USER)
+        if made_updates == False:
+            prdct.Product.products_list[item[0]-1].quantity -= how_many
+        print(f"Updated Quantity = {prdct.Product.products_list[item[0]-1].quantity}")
+    if made_updates:
+        print("Made Updates")
+        return(order_basket) # new and necessary - must return as may update it now 
+    else:
+        return(None)
  
 
 

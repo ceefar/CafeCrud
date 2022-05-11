@@ -31,7 +31,7 @@ class Product:
 
             self.product_id_cache.append(int(self.product_number)) # append the id to our cache, having cache means no duplicates, no duplicates means search by id number is plausible
             #END IF
-        #END INLINE FUNCTION
+        #END NESTED FUNCTION
 
         # varaibles, set regardless of load or create (so all except id/numb)
         self.name, self.price_gbp, self.quantity = name, price_gbp, quantity
@@ -173,7 +173,7 @@ class Product:
                 # filling in the above for loop with the data you want
                 
                 def is_sold_out(the_product):
-                    if int(the_product) == 0:
+                    if int(the_product) <= 0:
                         return("GONE")
                     else:
                         return(the_product)
@@ -202,7 +202,7 @@ class Product:
                             spaces -= 1
                         for x in range(spaces - 5):
                             spaces_string += " "
-                        print_string += (f"[ {int(prdct) + 1} ] {self.products_list[prdct].name} {spaces_string} ({self.products_list[prdct].quantity}) - £{self.products_list[prdct].price_gbp}       ")
+                        print_string += (f"[ {int(prdct) + 1} ] {self.products_list[prdct].name} {spaces_string} ({is_sold_out(self.products_list[prdct].quantity)}) - £{self.products_list[prdct].price_gbp}       ")
                     print(print_string)
                     # yield back as tuples with index value, check as recieving yield, if index value not in the indexes that would be in the current page (0-59,60-119...)
                 cpage = int((current_page_number + ipp) / ipp)
