@@ -93,7 +93,7 @@ class Product:
 
 
     # v6 print - pagination
-    def paginated_print(self, disp_size: int=22, rows: int=4, disp_str = "Enter Page Number (or use . to step forward +1 page) : "):
+    def paginated_print(self, disp_size: int=22, rows: int=3, disp_str = "Enter Page Number (or use . to step forward +1 page) : ", title_str=None): #just changed rows default arg from 4 to 3 btw
         try:
             user_wants_page = 1 # initialises the loop
             # whole method is this loop, obvs not ideal 
@@ -111,7 +111,11 @@ class Product:
                 last_page = [] # the single list with indexes of the last page (basically display_to_use but the end of it)
                 # top printout
                 fm.format_display(disp_size)
-                print(f"Sexy AF Pagniation - Dynamic Page Size\nCurrently {ipp} Items Per Page, {len(self.products_list)} Total Products\n{fm.print_dashes(return_it=True)}\n") # note the reason to point out uses index notation is for deleting and displaying etc this is best, thats just what indexing is for, but product numbers is more like a unique identifier that isn't the name incase it was required which im sure there are irl cases for
+                if title_str is None:
+                    print(f"Sexy AF Pagniation - Dynamic Page Size") 
+                else:
+                    print(f"{title_str}")
+                print(f"Currently {ipp} Items Per Page, {len(self.products_list)} Total Products\n{fm.print_dashes(return_it=True)}") # note the reason to point out uses index notation is for deleting and displaying etc this is best, thats just what indexing is for, but product numbers is more like a unique identifier that isn't the name incase it was required which im sure there are irl cases for
                 print(f"[Index] Product (quantity) - £Price\n")
                 
                 if remaining_items != 0: #print(f"usable_screen={usable_screen}\n,ipl={ipl}\n,ipp={ipp}\n,full_pages={full_pages}\n,remaining_items={remaining_items}\n,")
@@ -167,11 +171,23 @@ class Product:
                 # cpage = lambda x : x - 1)*60 ???
                 # [(cpage(a)),(cpage(b)),(cpage(c)),(cpage(d)),(cpage(e)) for ] ??? whatever... returning lists for a,b,c... (1,)
                 # filling in the above for loop with the data you want
+                
+                def is_sold_out(the_product):
+                    if int(the_product) == 0:
+                        return("GONE")
+                    else:
+                        return(the_product)
+
                 for the_line in the_page: 
                     print_string = ""
                     for prdct in the_line:
                         prdct + current_page_number
-                        current_string = (f"{prdct} {self.products_list[prdct].name} {self.products_list[prdct].price_gbp} {self.products_list[prdct].quantity} ")
+                        
+
+                        #
+                        # IF ITS QUANT IS ZERO THEN USE A DIFF TING HERE!!
+                        #
+                        current_string = (f"{prdct} {self.products_list[prdct].name} {self.products_list[prdct].price_gbp} {is_sold_out(self.products_list[prdct].quantity)} ")
                         spaces = 48 - (len(current_string))
                         spaces_string = ""
                         if int(prdct) + 1 == 10: # adjust for the extra character in the display by minusing one from the spaces on the end
@@ -194,7 +210,7 @@ class Product:
                 def return_one_line_art():
                     one_line_ascii_art_list = ["̿' ̿'\̵͇̿̿\з=(◕_◕)=ε/̵͇̿̿/'̿'̿ ̿  NOBODY MOVE!","( ͡° ͜ʖ ͡°) *staring intensifies*","(╯°□°)--︻╦╤─ - - - WATCH OUT HE'S GOT A GUN","(⌐■_■)--︻╦╤─ - - - GET DOWN MR PRESIDENT","┻━┻︵  \(°□°)/ ︵ ┻━┻ FLIPPIN DEM TABLES","(ノಠ益ಠ)ノ彡︵ ┻━┻︵ ┻━┻ NO TABLE IS SAFE","ʕつಠᴥಠʔつ ︵ ┻━┻ HIDE YO KIDS HIDE YO TABLES","(ಠ_ಠ)┌∩┐ BYE BISH","(ง •̀_•́)ง FIGHT ME FOKER!","[¬º-°]¬  [¬º-°]¬ ZOMBIES RUN!","(╭ರ_•́) CURIOUSER AND CURIOUSER","つ ◕_◕ ༽つ つ ◕_◕ ༽つ TAKE MY ENERGY","༼つಠ益ಠ༽つ ─=≡ΣO)) HADOUKEN!"]
                     return(one_line_ascii_art_list[random.randint(0, len(one_line_ascii_art_list)-1)])
-                # END IN LINE FUNCTION that i should totally move 
+                # END NESTED FUNCTION that i should totally move 
                 if cpage > len(pages_as_numbers_listed) : print(return_one_line_art()) ############### ascii art, could do if max go back to one but prefer the easter egg
                 print("\n", end="PAGES ")
                 #pages_print.insert(0,"PAGE NUMBERS :")

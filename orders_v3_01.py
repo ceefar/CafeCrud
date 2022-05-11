@@ -156,7 +156,7 @@ def create_new_order(disp_size, rows):
 
         # GET COURIER
         if lets_continue:
-            attached_courier = get_couriers_from_list_and_attach(disp_size, rows, name, phone_number)
+            attached_courier = get_couriers_from_list_and_attach(disp_size, rows, name, phone_number, customer_address)
             if attached_courier == "0":
                 print("Escape Key Logged")
                 lets_continue = False
@@ -169,7 +169,6 @@ def create_new_order(disp_size, rows):
                 lets_continue = False
             else:
                 break
-
             
     #location = get_location_from_list(disp_size, name, phone_number)
     #Couriers(name.strip(), str(phone_number), str(location))
@@ -217,7 +216,7 @@ def get_mobile(disp_size, name:str = None): # v2 validation = needs try except t
         num = input("Enter Valid UK Mobile Number (no + symbol) : ")
         if num == "0":
             break
-        elif mob_is_good(num):
+        elif len(num) > 1: #mob_is_good(num): (put it back, is just too long when testing frequently)
             print("Number Validated")
             break
         else:
@@ -227,9 +226,7 @@ def get_mobile(disp_size, name:str = None): # v2 validation = needs try except t
 
 def get_address(disp_size, name=None, phone_number=None):  # v2 validation = needs try except to be acceptable
     """Get and return name of courier with simple regex validation, not used for update but should refactor for this?"""
-
     # COULD LEGIT DO IF ADDRESS CONTAINS VALID LOCATION ONLY SHOW VALID COURIERS, ELSE SHOW ALL
-
     invalid_addy = True
     # name_is_good = lambda x : re.match(r"[A-Za-z]{2,25}|\s|\.|[a-zA-Z]|[A-Za-z]{1,25}\w$", x) 
     while invalid_addy:
@@ -239,7 +236,7 @@ def get_address(disp_size, name=None, phone_number=None):  # v2 validation = nee
         address = input("Enter Address : ")
         if address == "0":
             break
-        elif len(address) >= 10:          # name_is_good(name):
+        elif len(address) >= 5:          # name_is_good(name):
             print(f"[{address}] Validated")
             break
         else:
@@ -247,22 +244,19 @@ def get_address(disp_size, name=None, phone_number=None):  # v2 validation = nee
     return(address)
 
 
-def get_couriers_from_list_and_attach(disp_size, rows, name=None, phone_number=None): # if take locations can create new function to update them (add/remove/rename), v3 validation = acceptable
+def get_couriers_from_list_and_attach(disp_size, rows, name=None, phone_number=None, customer_address=None): # if take locations can create new function to update them (add/remove/rename), v3 validation = acceptable
     # print the couriers list, to improve obvs
     fm.format_display(disp_size)
-
-    # put me within the loop at the top ?
-    if name is not None and phone_number is not None: # when comparing to None always use comparison not equality 
-        print(f"{fm.print_dashes(return_it=True)}\nName : {name}\nMobile : {phone_number}\n{fm.print_dashes(return_it=True)}\n") #might remove here 
-    
-    
     
     # main functionality
     not_cancelled = True
     while not_cancelled:
 
+        # if name and phone_number and customer_address: (should work the same, test it)
+        if name is not None and phone_number is not None and customer_address is not None: # when comparing to None always use comparison not equality 
+            print(f"{fm.print_dashes(return_it=True)}\nName : {name}\nMobile : {phone_number}\nAddress : {customer_address}\n{fm.print_dashes(return_it=True)}\n") #might remove here 
         Orders.items_per_list_print_couriers(disp_size, rows)
-
+        print("")
         try:
             user_input = int(input("Enter Your Selection : "))
         except ValueError:
@@ -292,48 +286,83 @@ def get_couriers_from_list_and_attach(disp_size, rows, name=None, phone_number=N
 
 def get_and_add_products(disp_size, rows):
     basket_total = 0.0 
-
-    prdct.Product.paginated_print(prdct.Product, disp_size, rows, "Enter Page (step with .), To Select Courier First Hit '0' :" )
-    product_to_add = int(input("Enter Product Number To Add It To The Order"))
-    prod = prdct.Product.products_list[product_to_add - 1]
-    prod_price = getattr(prod, "price_gbp")
-    prod_name = getattr(prod, "name")
-    prod_numb = getattr(prod, "product_number")
-    prod_quant = getattr(prod, "quantity")
+    order_basket = []
     
-    if int(prod_quant) == 0:
-        print("Try Again - Reloop!")
-    else:
-        print(f"Sure You Want To Add [{prod_numb}] - {prod_name} To The Order?\nProduct Price = {prod_price}")
-        print("Commit Confirm - assuming yes")
-        fm.fake_input()
-        print("Ok how many? - assuming 1 for now")
-        how_many = int(input(f"Enter Amount ({prod_quant} available) : ")) 
+    got_more = True
+    while got_more:
+        prdct.Product.paginated_print(prdct.Product, disp_size, rows, "Enter Page (step with .), To Select A Product First Hit '0' : ","Choose A Product To Add To The Order")
+        product_to_add = int(input("Enter Product Number To Add It To The Order : "))
+        prod = prdct.Product.products_list[product_to_add - 1]
+        prod_price = getattr(prod, "price_gbp")
+        prod_name = getattr(prod, "name")
+        prod_numb = getattr(prod, "product_number")
+        prod_quant = getattr(prod, "quantity")
         
-        # DISPLAY QUANT HERE TOO, IF THEY TRY TO GO UNDER THE AVAILABILITY DO NOT ALLOW IT !!!!!
-        
-        order_basket = product_basket(prod_numb, prod_name, prod_price, how_many, order_basket)
-        basket_total += order_basket[-1][2] #last item added, the final price (multiplied by wanted quantity)
+        if int(prod_quant) == 0:
+            print("Try Again - Reloop!") # TO DO THIS, is easy af ffs just cba
+        else:
+            fm.format_display(disp_size)
+            print(f"Sure You Want To Add [{prod_numb}] - {prod_name} To The Order?\nPrice = £{prod_price}")
+            print("Commit Confirm - assuming yes")
+            fm.print_dashes()
+            print("Ok how many?")
 
-        # TO UPDATE - AMOUNT OF ITEMS ISNT LEN, ITS THE SUM/COUNT OF ALL "HOW_MANY"s
-
-        print(f"Basket has {len(order_basket)} items, totalling {basket_total}")
-    # some way to say im done, probs just another Y/N
-    print("Commit Confirm - assuming yes")
-    fm.fake_input()
+            quant_is_good = True # DUH SHIT LIKE THIS AS FUNCTION!!!
+            while quant_is_good:
+                how_many = int(input(f"Enter Amount ({prod_quant} available) : ")) 
+                if how_many > prod_quant:
+                    print("Something Doesn't Quite Add Up... Try Again")
+                    fm.fake_input()
+                    break
+                    
+            # got more moved     
+                order_basket = product_basket(prod_numb, prod_name, prod_price, how_many, order_basket)
+                total_basket_quant = 0
+                for order in order_basket:
+                    total_basket_quant += order[3]
+                print(f"Order Basket = {order_basket}")
+                basket_total += order_basket[-1][2] #last item added, the final price (multiplied by wanted quantity)
+                fm.format_display(disp_size)
+                print(f"Current Basket\n{fm.print_dashes(return_it=True)}")
+                print(f"Price : £{basket_total:.2f}")
+                print(f"Items : {total_basket_quant} total") # should really use the sum/count of how_many instead of len basket div 5 but meh
+                fm.print_dashes()
+                for product in order_basket:
+                    print(f"{product[3]}x {product[1]}(#{product[0]}) @ £{(product[2] / product[3]):.2f} each - £[ total]")
+                # commit confirm
+                fm.print_dashes()
+                yesno = fm.get_user_yes_true_or_no_false(before_text=f"Want To Add More Items\n(No = Checkout)\n{fm.print_dashes(return_it=True)}\n")
+                fm.fake_input()
+                if yesno == False:
+                    got_more = False
+                    break
+                
+    print("Ok finalising your basket...")
+    final_products_list = []
     update_quants_from_basket(order_basket)
+    for item_info in order_basket:
+        final_products_list.append(item_info[0])
+
+
+    print(f"The Item Numbers Are = {final_products_list}") #print(f"Return Value (tbc) = {order_basket[-1][0]}")   
+    print(f"Total Price For Your Order = {basket_total}")
+    
+    # it that works we're gravy here for now just cont (status then done?! could move courier select but meh, also do need to confirm the quantity is updating)
+    print("Returning as tuple! - dont forget to unpack on receipt")
+    return(final_products_list, basket_total) # this is just the last one (being product number) added (needs to be a list), simple for loop (or comprehension!) will do the trick
+    
     # create only products list quickly and return it PLUS final price
     # get status
     # fyi feel like attaching courier should come after the ordering process but whatever do in future
     # needs to return the list of all product ids
-    print(f"Return Value (tbc) = {order_basket[-1][0]}")
-    return(order_basket[-1][0]) # this is just the last one added, simple for loop (or comprehension!) will do the trick
+    # THE BASKET WILL BE COMPLETED AT THIS POINT SO YES THIS IS FINE IG - MAKE THIS (list of products) A LIST IN HERE THO FOR SURE
 
     # UPDATE QUANTITIES FROM BASKET NEW FUNCTION 100!
     # once confirmed, make live order (remaining things - create list thats only the products for order init, get status, get final price (have rn! save on confirm order here ig?))
     # then update quantity
         
-def product_basket(item_num_to_add:int, item_price_to_add:float, item_name_to_add:str, how_many:int, basket_list=None):
+        
+def product_basket(item_num_to_add:int, item_name_to_add:str, item_price_to_add:float, how_many:int, basket_list=None):
     if basket_list is None:
         basket_list = []
     final_price_to_add = item_price_to_add * how_many  # *= duh
@@ -346,11 +375,11 @@ def product_basket(item_num_to_add:int, item_price_to_add:float, item_name_to_ad
 def update_quants_from_basket(order_basket):
     for i, item in enumerate(order_basket):
         how_many = int(order_basket[i][3]) # might be unnecessary to force conversion here
-        print(f"Updating Quantity For {prdct.Product.products_list[item[0]].name}")
-        print(f"Current Quantity = {prdct.Product.products_list[item[0]].quantity}")
+        print(f"Updating Quantity For {prdct.Product.products_list[item[-1]].name}")
+        print(f"Current Quantity = {prdct.Product.products_list[item[-1]].quantity}")
         print(f"User Wants = {how_many}")        
-        prdct.Product.products_list[item[0]].quantity -= how_many
-        print(f"Updated Quantity = {prdct.Product.products_list[item[0]].quantity}")
+        prdct.Product.products_list[item[-1]].quantity -= how_many
+        print(f"Updated Quantity = {prdct.Product.products_list[item[-1]].quantity}")
  
 
 
