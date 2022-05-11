@@ -93,7 +93,7 @@ class Product:
 
 
     # v6 print - pagination
-    def paginated_print(self, disp_size: int=22, rows: int=4):
+    def paginated_print(self, disp_size: int=22, rows: int=4, disp_str = "Enter Page Number (or use . to step forward +1 page) : "):
         try:
             user_wants_page = 1 # initialises the loop
             # whole method is this loop, obvs not ideal 
@@ -201,7 +201,13 @@ class Product:
                 highlight_page = lambda h : f"[[ {h} ]]" if h == cpage else f"[ {h} ]" # language is so mad wtf            
                 print(*[highlight_page(p) for p in pages_as_numbers_listed])
                 #print("^ page numbers ^")
-                user_wants_page = input("\nEnter Page Number (or use . to step forward +1 page) : ")
+                #
+                #
+                # UPDATING
+                # user_wants_page = input("\nEnter Page Number (or use . to step forward +1 page) : ")
+                #
+                #
+                user_wants_page = input(f"\n{disp_str}")
                 if user_wants_page == "0":
                     break
                 elif user_wants_page == ".":
@@ -395,7 +401,7 @@ def main_menu(rows=3, disp_size=22):
             # PRINT THE MENU  
             fm.format_display(disp_size)
             print(f"PRODUCTS v1.02\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n")
-            menu_string = ["[ 1 ] Create New", "[ 2 ] Select & Delete (alpha)", "[ 3 ] Print Sub Menu", "[ 4 ] Update Product Name", "[ 5 ] Sexy Pagniation", "[ - ] -", "[ - ] -", "[ S ] Settings Sub Menu", "[ L ] Load Products To Classes (alpha)", "[ 0 ] Main Menu\n","- - - - - - - - - - -"]
+            menu_string = ["[ 1 ] Create New", "[ 2 ] Select & Delete (alpha)", "[ 3 ] Print Sub Menu", "[ 4 ] Update Product Name", "[ 5 ] Sexy Pagniation", "[ 6 ] Update Attributes (alpha af)", "[ - ] -", "[ S ] Settings Sub Menu", "[ L ] Load Products To Classes (alpha)", "[ 0 ] Main Menu\n","- - - - - - - - - - -"]
             print(*menu_string, sep="\n")
             # GET THE USERS INPUT
             user_menu_input = input("Enter Menu Selection : ")
@@ -680,8 +686,10 @@ def get_price():
     #print(f"Returning {x}{type(x)}")
     return(float(price_in_pounds))
 
-## NEW TEST SHIT 
 
+
+## NEW TEST SHIT 
+## imo is overcomplicated, just search for the delimiter and then validate if the attached word has an action...
 
 def action_logger(action:str, is_done:bool):
     #just have them relate to ints in a simple switch?

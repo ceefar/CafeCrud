@@ -2,7 +2,7 @@
 2,XXL Sausage,2.99,50
 3,Sweetcake,3.5,50
 4,Sweetroll,2.5,50
-5,Rolled Sweetcake,1.5,50
+5,Rolled Sweetcake,4.5,50
 6,Crabmeat,6.99,50
 7,Jumbo Potato,2.29,100
 8,Mead,6.85,100
@@ -10,8 +10,8 @@
 10,Shadowbanish Wine,45.59,4
 11,Sheperds Pie,5.99,100
 12,Smoked Baliwog Leg,10.49,100
-13,Sweetcake,1.5,100
-14,Sweetroll,1.0,100
+13,Scrambled Grummite Eggs,3.75,100
+14,Poached Grummite Eggs,3.25,100
 15,Venison,24.99,5
 16,Cream Of Daedra Venin,8.99,10
 17,Grilled Troll Fat,6.29,100
@@ -31,7 +31,7 @@
 19,Two Number 9s,7.45,45
 22,Number 6 + Extra Dip,8.1,30
 23,Two Number 45s,11.99,15
-25,Large Soda,1.99,1000
+25,Nuka Cola Icecream Float,7.99,1000
 28,Elixir Soup,17.99,5
 31,The Sandvich,5.49,5
 32,Nuka Cola,3.99,20

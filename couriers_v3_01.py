@@ -306,9 +306,9 @@ def get_courier_info(self, the_key): # basically for group all above then loop i
 ## MAIN MENU FUNCTIONS #######################################################################################################################################################
 
 
-def main():
-    disp_size = 20
-    rows = 3
+def main(rows=3, disp_size=22): 
+    #disp_size = 20
+    #rows = 3
     menu_string = [f"COURIERS v3.01\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n","[ 1 ] Create New", "[ 2 ] Print All Couriers", "[ 3 ] Update Courier", "[ 4 ] Delete A Courier", "[ 5 ] Mass Delete Couriers", "[ - ] -", "[ 8 ] Quick Add 30", "[ 9 ] Quick Add 150", "[ S ] -", "[ L ] -", "[ 0 ] Quit\n","- - - - - - - - - - -"]
     user_menu_input = 1
     print_again = True
@@ -452,4 +452,4 @@ def return_one_line_art():
 if __name__ == "__main__":
     # DRIVER
     Couriers.load_couriers_via_csv()
-    main()
+    main(3,22)

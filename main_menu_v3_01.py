@@ -1,11 +1,10 @@
 import products_v1_02 as prdct
 import couriers_v3_01 as cour
 import format_random_v2_00 as fm # for formatting display, getting random things
+import orders_v3_01 as ordrs
 
 
-def main_menu():
-    disp_size = 20
-    rows = 3
+def main_menu(disp_size = 20, rows = 3):
     user_menu_input = 1
     while user_menu_input != "0":
         # PRINT THE MENU & GET THE USERS INPUT
@@ -14,13 +13,16 @@ def main_menu():
         # GO TO COURIERS
         if user_menu_input == "1":
             cour.main()
-        # GO TO ORDERS
+        # GO TO PRODCTS
         elif user_menu_input == "2":
             rows, disp_size = prdct.main_menu(rows, disp_size)
+        # GO TO ORDERS
         elif user_menu_input == "3":
+            ordrs.main_orders() #rows, disp_size
+        elif user_menu_input == "8":
             for x, _ in enumerate(cour.Couriers.couriers_list):
                 print(cour.Couriers.couriers_list[x].name)
-        elif user_menu_input == "4":
+        elif user_menu_input == "9":
             cour.update_courier(disp_size)
         elif user_menu_input == "5":
             print(f"Rows : {rows}, Display Size : {disp_size}")
@@ -50,7 +52,7 @@ def main_menu():
 def print_main_menu():
     fm.print_app_name("MAIN")
     #menu_string = ["[ 1 ] for Couriers", "[ 2 ] for Orders", "[ 3 ] to Print Couriers", "[ 4 ] to Print Orders", "[ 0 ] to Quit","- - - - - - - - - - -"]
-    menu_string = ["[ 1 ] for Couriers", "[ 2 ] for Products", "[ 0 ] to Quit","- - - - - - - - - - -"]
+    menu_string = ["[ 1 ] for Couriers", "[ 2 ] for Products", "[ 3 ] for Orders", "[ 0 ] to Quit","- - - - - - - - - - -"]
     print(*menu_string, sep="\n")
 
 

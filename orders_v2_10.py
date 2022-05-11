@@ -826,7 +826,8 @@ def print_better_orders_menu():
 
 
 # DRIVER
-#main_orders()
+if __name__ == "__main__":
+    main_orders([],[])
 
 
 
