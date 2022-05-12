@@ -4,6 +4,38 @@ import random
 import pickle
 import csv
 
+import pymysql
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+host = os.environ.get("mysql_host")
+user = os.environ.get("mysql_user")
+password = os.environ.get("mysql_pass")
+database = os.environ.get("mysql_db")
+
+# Establish a database connection
+connection = pymysql.connect(
+    host,
+    user,
+    password,
+    database
+)
+
+def get_from_db(command):
+    cursor = connection.cursor()
+    cursor.execute(f"{command}") 
+    myresult = cursor.fetchall()
+    return(myresult)
+
+def read_from_db():
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM couriers") 
+    myresult = cursor.fetchall()
+    for x in myresult:
+        print(x)
+
 # CLASSES ########################################
 # COURIERS CLASS #################################
 
@@ -138,8 +170,9 @@ class Couriers:
             # set the headers for the csv            
             fieldnames = ["courier_id", "name", "phone_number", "location", "availability"] # name:str, phone_number:str, location:str, courier_id:int, availability:list
             # instruct the writer to write the headers
+            #writer = csv.DictWriter(csvfile, delimiter=',')
             writer = csv.DictWriter(csvfile, delimiter=',', fieldnames= fieldnames)
-            writer.writeheader()
+            #writer.writeheader()
             # instruct the writer to write the row
             for i, _ in enumerate(self.couriers_list):
                 writer.writerow({"courier_id":self.couriers_list[i].courier_id, "name":self.couriers_list[i].name, "phone_number":self.couriers_list[i].phone_number, "location":self.couriers_list[i].location, "availability":self.couriers_list[i].availability})
@@ -153,7 +186,7 @@ class Couriers:
                 templist.append(row.strip())
                 print(f"{row} LOADED SUCCESSFULLY")
         fm.format_display()
-        templist.pop(0) # pops the header off the temp list
+        #templist.pop(0) # pops the header off the temp list
         #Couriers.couriers_list = templist
         for index in range(len(templist)):
             x = templist[index].split(",")
@@ -179,6 +212,102 @@ class Couriers:
 
 # real quick tryna get this generator to return,
 # either by appending the load all through a loop AND/OR maybe through classmethod custom init method for creating the objects through generation
+
+
+####### PRINT - NEW - FROM ORDERS (ikr lol)
+
+def items_per_list_print_couriers(disp_size: int=22, rows = 3):
+    #ipl = rows #da fuck 
+    usable_screen = int(disp_size) - 10
+    ipl = usable_screen
+    i_list = []
+    # function
+    # creates the initial lists with just ints of the order
+    for g in range(ipl):
+            x = g # if needs to be plus 1 then do here and also in x < len(main_co_list) + 1
+            g_list = []
+            for i in range(int(len(Couriers.couriers_list)/ipl) + 1): # rows? needed (for X per line)
+                if x < len(Couriers.couriers_list):
+                    g_list.append(x)
+                x += ipl
+            i_list.append(g_list)
+            x += 1
+            # END FOR
+    # END FOR    
+    # filling in the above for loop with the data you want
+
+    for short_list in i_list: 
+        print_string = ""
+        for index in short_list:
+            current_string = (f"{index} {Couriers.couriers_list[index].name}")
+            spaces = 35 - (len(current_string))
+            spaces_string = ""
+            if int(index) + 1 == 10:
+                spaces -= 1
+            for x in range(spaces):
+                spaces_string += " "
+            cr = Couriers.couriers_list[index]    
+            print_string += (f"[ {int(index) + 1} ] {cr.name} - {cr.location} {spaces_string}")
+        print("")
+        fm.print_dashes()
+        print(print_string)
+
+
+####### TEST DB PRINT
+
+def db_print_test(disp_size: int=22, rows = 3):
+    usable_screen = int(disp_size) - 10
+    ipl = usable_screen
+    length_of_couriers = get_from_db(f'SELECT * FROM couriers')
+    length_of_couriers = len(length_of_couriers)
+    total_pages = int(length_of_couriers / ipl)
+    if (length_of_couriers % ipl) != 0:
+        total_pages += 1
+    final_page = len(range(total_pages))
+    print(f"FINAL PAGE : {final_page}")
+    pages_display = [f"[ {x+1} ]" for x in range(total_pages)]
+    pages_display = " - ".join(pages_display)
+    fm.format_display(disp_size)
+    want_more_print = True
+    current_page = 1
+    query = f'SELECT * FROM couriers LIMIT {ipl}'
+    while want_more_print: 
+        query = query
+        result = get_from_db(query)
+        for courier in result:
+            x = f"{courier[0]} ] - {courier[1]} - {courier[3]} [0{courier[2]}"
+            current_str = len(x)
+            spaces = 55 - current_str
+            spaces_string = ""
+            for x in range(spaces):
+                spaces_string += " "
+            #print(courier)
+            print(f"[ {courier[0]} ] - {courier[1]} - {courier[3]} {spaces_string} [0{courier[2]}]")
+
+        fm.print_dashes()
+        print("")    
+        print(pages_display)
+        
+        paginate_action = (input("Enter A Page Number Or 0 To Quit : "))
+        if current_page > final_page:
+            fm.format_display(disp_size)
+            return_one_line_art()
+        elif paginate_action != "0":
+            fm.format_display(disp_size)
+            current_page = int(paginate_action)
+            query = f'SELECT * FROM couriers WHERE courier_db_id > {(current_page - 1) * ipl} LIMIT {ipl}'
+        else:
+            #fm.format_display(disp_size)
+            print("Ok Bye")
+            want_more_print = False
+
+
+
+
+
+
+
+
 
 ## DELETE COURIER FUNCTIONS #######################################################################################################################################################
 
@@ -333,7 +462,8 @@ def main(rows=3, disp_size=22):
         # [2] PRINT COURIERS
         elif user_menu_input == "2":
             fm.format_display(disp_size)
-            print(*(Couriers.generate_index_name_string(Couriers)), sep="\n")
+            items_per_list_print_couriers(disp_size, rows)
+            #print(*(Couriers.generate_index_name_string(Couriers)), sep="\n")
             fm.fake_input()
 
         # [3] UPDATE COURIERS (need to do as submenu?)
@@ -355,6 +485,16 @@ def main(rows=3, disp_size=22):
         elif user_menu_input == "5":
             delete_mass_couriers(disp_size)
 
+        # [6] DB TEST READ
+        elif user_menu_input == "6":
+            read_from_db()
+            fm.fake_input()
+
+        # [7] DB GET TEST
+        elif user_menu_input == '7':
+            db_print_test(disp_size, rows)
+            fm.fake_input()
+
         # [8] - QUICK ADD 30
         elif user_menu_input == "8":
             quick_add_30_couriers()
@@ -370,7 +510,7 @@ def main(rows=3, disp_size=22):
 
         # [S] SETTINGS SUB MENU
         elif user_menu_input == "S" or user_menu_input == "s":
-            print(return_one_line_art())
+            return_one_line_art()
 
         # [L] L - LOAD (HIDDEN)
         elif user_menu_input == "L" or user_menu_input == "l":
@@ -446,10 +586,17 @@ def quick_add_30_couriers():
 # can also use this for excepts/errors tbf lol
 def return_one_line_art():
     one_line_ascii_art_list = ["̿' ̿'\̵͇̿̿\з=(◕_◕)=ε/̵͇̿̿/'̿'̿ ̿  NOBODY MOVE!","( ͡° ͜ʖ ͡°) *STARING INTENSIFIES*","(╯°□°)--︻╦╤─ - - - WATCH OUT HE'S GOT A GUN","(⌐■_■)--︻╦╤─ - - - GET DOWN MR PRESIDENT","┻━┻︵  \(°□°)/ ︵ ┻━┻ FLIPPIN DEM TABLES","(ノಠ益ಠ)ノ彡︵ ┻━┻︵ ┻━┻ NO TABLE IS SAFE","ʕつಠᴥಠʔつ ︵ ┻━┻ HIDE YO KIDS HIDE YO TABLES","(ಠ_ಠ)┌∩┐ BYE BISH","(ง •̀_•́)ง FIGHT ME FOKER!","[¬º-°]¬  [¬º-°]¬ ZOMBIES RUN!","(╭ರ_•́) CURIOUSER AND CURIOUSER","つ ◕_◕ ༽つ つ ◕_◕ ༽つ TAKE MY ENERGY","༼つಠ益ಠ༽つ ─=≡ΣO)) HADOUKEN!"]
-    return(one_line_ascii_art_list[random.randint(0, len(one_line_ascii_art_list)-1)])
+    print(one_line_ascii_art_list[random.randint(0, len(one_line_ascii_art_list)-1)])
 
 
 if __name__ == "__main__":
     # DRIVER
     Couriers.load_couriers_via_csv()
-    main(3,22)
+    the_rows = 3
+    the_display = 22
+    main(the_rows, the_display)
+
+
+
+
+

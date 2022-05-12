@@ -23,25 +23,39 @@ connection = pymysql.connect(
     database
 )
 
-# A cursor is an object that represents a DB cursor,
-# which is used to manage the context of a fetch operation.
-cursor = connection.cursor()
 
-# Execute SQL query
-cursor.execute("SELECT * FROM person") 
+def write_to_db():
+    # A cursor is an object that represents a DB cursor,
+    # which is used to manage the context of a fetch operation.
+    cursor = connection.cursor()
 
-myresult = cursor.fetchall()
+    for index, _ in enumerate(cour.Couriers.couriers_list):
+        print(index)
+        name_1 = (cour.Couriers.couriers_list[index].name)
+        num_1 = (cour.Couriers.couriers_list[index].phone_number)
+        loc_1 = (cour.Couriers.couriers_list[index].location)
+        uuid_1 = (cour.Couriers.couriers_list[index].courier_id)
 
-for x in myresult:
-    print(x)
+        # Execute SQL query
+        sql = "INSERT INTO couriers (name, phone_number, location, courier_uuid) VALUES (%s, %s, %s, %s)"
+        val = (name_1, num_1, loc_1, uuid_1)
+
+        cursor.execute(sql, val)
+        connection.commit()
+
+    # Closes the cursor so will be unusable from this point 
+    cursor.close()
+
+    # Closes the connection to the DB, make sure you ALWAYS do this
+    connection.close()
 
 
-# Closes the cursor so will be unusable from this point 
-cursor.close()
-
-# Closes the connection to the DB, make sure you ALWAYS do this
-connection.close()
-
+def read_from_db():
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM couriers") 
+    myresult = cursor.fetchall()
+    for x in myresult:
+        print(x)
 
 
 
@@ -104,7 +118,10 @@ def driver(): #loads files, initialises app (should do save here when bounce now
     #prdct.Product.load_list_from_file(True)
     #cour.Couriers.load_via_pickle() # both are class methods and therefore i think means would be properly encapuslated (if made private) which is awesome but sure im likely missing something (is a way to fake it in python using underscore notation right?)
     cour.Couriers.load_couriers_via_csv() # yh legit is actually private but just can access because python not c++ ok kl np
+
+    #write_to_db() # would be something like read if you cant read (theres no data) then write it from backup csv idk
+    #read_from_db()
     main_menu()
     
-
+    
 driver()
