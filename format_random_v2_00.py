@@ -1,6 +1,6 @@
 import random # for random numbers
 import os # for system access (file names)
-import keyboard # for direct keyboard input access
+#import keyboard # for direct keyboard input access
 import time # for pausing
 
 
@@ -314,13 +314,10 @@ def sing_til_input():
             for line in the_song:
                 print(line)
                 time.sleep(0.5)   
-                if keyboard.is_pressed('q'):  # if key 'q' is pressed 
-                    print("")
-                    print('My Singing That Bad Huh?') # print('My Singing That Bad Huh? ',i) i gives number you quit on
-                    break  # finishing the loop
-                else:
-                    time.sleep(0.5)
-                    i+=1
+                #if keyboard.is_pressed('q'):  # if key 'q' is pressed 
+                print("")
+                print('My Singing That Bad Huh?') # print('My Singing That Bad Huh? ',i) i gives number you quit on
+                break  # finishing the loop
             else:
                 break
             break

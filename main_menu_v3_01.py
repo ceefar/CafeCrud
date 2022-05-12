@@ -4,6 +4,49 @@ import format_random_v2_00 as fm # for formatting display, getting random things
 import orders_v3_01 as ordrs
 
 
+import pymysql
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+host = os.environ.get("mysql_host")
+user = os.environ.get("mysql_user")
+password = os.environ.get("mysql_pass")
+database = os.environ.get("mysql_db")
+
+# Establish a database connection
+connection = pymysql.connect(
+    host,
+    user,
+    password,
+    database
+)
+
+# A cursor is an object that represents a DB cursor,
+# which is used to manage the context of a fetch operation.
+cursor = connection.cursor()
+
+# Execute SQL query
+cursor.execute("SELECT * FROM person") 
+
+myresult = cursor.fetchall()
+
+for x in myresult:
+    print(x)
+
+
+# Closes the cursor so will be unusable from this point 
+cursor.close()
+
+# Closes the connection to the DB, make sure you ALWAYS do this
+connection.close()
+
+
+
+
+##########################################################################
+
 def main_menu(disp_size = 20, rows = 3):
     user_menu_input = 1
     while user_menu_input != "0":

@@ -1,5 +1,5 @@
-import orders_v2_10 as ord
-import couriers_v2_17 as cour
+import version_storage_orders.orders_v2_10 as ord
+import version_storage_couriers.couriers_v2_17 as cour
 import format_random_v2_00 as fm # for formatting display, getting random things
 import json
 import time
