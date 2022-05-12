@@ -71,7 +71,9 @@ class Orders:
         #END IF
     #END INIT    
 
+# PRINT FUNCTIONS
 
+# COURIERS - THIS NEEDS TO BE FIXED AGAIN BUT CBA
 # simple couriers print, code copied (could have just called the function knobhead!)
     def items_per_list_print_couriers(disp_size: int=22, rows = 3):
         #ipl = rows #da fuck 
@@ -107,6 +109,85 @@ class Orders:
                 print_string += (f"[ {int(index) + 1} ] {cr.name} - {cr.location} {spaces_string}")
             print(print_string)
 
+    # ORDERS
+
+
+    def print_orders(self):
+        fm.format_display(then_text = " PRINT ORDERS ".center(60, '-'))
+        # if the list is empty prompt user to load the default list (otherwise what you printing huh bud?)
+        if len(self.orders_list) < 1:
+            print("No Orders List - WTF?!") # you are prompted in here, if you say no then it returns an empty list
+            fm.format_display()
+
+        # if the orders list isn't empty do the print stuff below (you had a chance to just load a default one so this was ur call)
+        if len(self.orders_list) >= 1: # yes this is if not elif intentionally, we want to check twice if the orders list is empty at the start
+            print("")
+            #fm.format_display()
+            print("Printing Default Orders List [ {} Total Orders ]".format(len(self.orders_list)))
+            fm.print_dashes()
+            if len(self.orders_list) >= 3:
+                print("[ 1 ] = Search For Order Number")
+                fm.print_dashes()
+            print("[ 2 ] = Scroll Orders List")
+            fm.print_dashes()
+            one_or_two = input("Your Selection : ")
+            fm.print_dashes()
+
+            if one_or_two == "1": # SEARCH - PROBS NEEDS GET ATTR UPDATE WHICH IS FINE
+                fm.format_display(end_with_dashes = True)
+                wanted_order = int(input("Enter An Order Number [#1 - #{}] : ".format(len(self.orders_list))))
+                fm.format_display() 
+                print(" ORDER #{} FOR {} ".format(wanted_order, self.orders_list[wanted_order - 1]["customer_name"]).center(60, '-'))
+                print("")
+                print(" Customer Name = {}".format(self.orders_list[wanted_order - 1]["customer_name"]))
+                print(" Customer Address = {}".format(self.orders_list[wanted_order - 1]["customer_address"]))
+                print(" Customer Phone Number = {}".format(self.orders_list[wanted_order - 1]["customer_phone"]))
+                print(" Courier Number = {}".format(self.orders_list[wanted_order - 1]["courier_number"]))
+                print(" Order Status = {}".format(self.orders_list[wanted_order - 1]["order_status"]))
+                print(" Order Price = {}".format(self.orders_list[wanted_order - 1]["order_price"]))
+                print(" For Restaurant = {}".format(self.orders_list[wanted_order - 1]["products_ids"]))
+                print("")
+                faux_input = input("Press Enter To Continue : ")
+
+            elif one_or_two == "2": # SCROLL
+                # prints by scrolling through the items
+                # could always add skip 5 if order list is say over 20
+                for order_number, order in enumerate(self.orders_list):  
+                    fm.format_display() 
+                    print(" ORDER #{} ".format(order_number + 1).center(60, '-'))
+                    print(f" ORDER #{getattr(order,'order_id')} FOR {getattr(order,'customer_name')}")
+                    print("")
+                    print(f" Customer Name = {getattr(order,'customer_name')}")
+                    print(f" Customer Address = {getattr(order,'customer_address')}")
+                    print(f" Customer Phone Number = {getattr(order,'customer_phone')}") 
+                    print(f" Courier ID = {getattr(order,'courier_id')}")
+                    print(f" Order Status = {getattr(order,'order_status')}")
+                    print("")
+                    #print_dashes(30)
+                    fm.print_dashes(59, "not spaced")
+                    print("")
+                    faux_input = "" # storing the variable so it can be checked for an escape key (m)
+                    if order_number + 1 < len(self.orders_list):
+                        print("")
+                        print("")
+                        print("(enter m for menu)")
+                        faux_input = input("Press Enter To Print Next Order ({}/{}): ".format(order_number + 1, len(self.orders_list)))
+                    else:
+                        fm.print_dashes()
+                        print("NO MORE ORDERS ({}/{})".format(order_number + 1, len(self.orders_list)))
+                        fm.print_dashes()
+                        faux_input = input("Press Enter To Continue : ")
+                    if faux_input == "M" or faux_input == "m":
+                        # if the faux input is M then break (don't keep printing the loop)
+                        break
+
+        else:
+            # it found no list checking first, it asked you to load one, you said no, so it aint guna do nutting duh!
+            fm.print_dashes()
+            print("Nothing To Print, You Don't Wanna Load...")
+            fm.print_dashes()
+            faux_input = input("Press Enter To Continue : ")
+
 
 ''' FOR THE GET_ATTR WAY
 
@@ -118,11 +199,9 @@ class Orders:
 '''
 
 
-# customer name, address, phone
-# courier number (index or id idc)
-# product - items (product ids)
-# order - status, price
-
+# print(f"Order #{self.order_id} Created\nCUSTOMER INFO\nName: {self.customer_name}, Phone: {self.customer_phone}, Address: {self.customer_address}\nORDER INFO") # TO ADD A BOOL PARAM FOR SHOWING THIS PRINT STATEMENT?
+# print(f"Order Status: {self.order_status}, Assigned Courier: {courier_id}, Order Price: £{self.order_price}")
+# print(f"Order Info For Restaurant : {self.products_ids}")
 
 
 ## MAIN PROGRAM ############################################################################################################################################################
@@ -378,6 +457,7 @@ def product_basket(item_num_to_add:int, item_name_to_add:str, item_price_to_add:
     print(f"Current Basket = {basket_list}")
     return(basket_list)
 
+
 def update_quants_from_basket(order_basket):
     made_updates = False
     for i, item in enumerate(order_basket):
@@ -399,6 +479,7 @@ def update_quants_from_basket(order_basket):
         return(order_basket) # new and necessary - must return as may update it now 
     else:
         return(None)
+
 
     # test
     # then print orders to make sure is working as expected, print via class btw!
@@ -469,7 +550,7 @@ def main_orders(): #rows=3, disp_size=22
                     print_again = True
 
         if user_menu_input == "2":
-            Orders.items_per_list_print(disp_size, rows)
+            Orders.print_orders(Orders)
             fm.fake_input()
 
         if user_menu_input == "3":
