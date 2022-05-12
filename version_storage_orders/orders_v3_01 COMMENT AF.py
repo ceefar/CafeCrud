@@ -16,7 +16,7 @@ class Orders:
     orders_id_cache = [] # for ensuring the same orders id is NEVER used again, this is of critical importance imo
 
     # init constructor
-    def __init__(self, customer_name:str, customer_address:str, customer_phone:str, order_status:str, order_price:float, order_id:int, courier_id:int = None, products_ids:list = []): 
+    def __init__(self, customer_name:str, customer_address:str, customer_phone:str, order_status:int, order_price:float, order_id:int, courier_id:int = None, products_ids:list = []): 
         """ Load or create new courier with name, phone numb, & id numb """
         
         def get_valid_order_id():
@@ -54,7 +54,7 @@ class Orders:
                 self.order_id = order_id
                 self.orders_id_cache.append(self.order_id)
             self.orders_list.append(self)
-            print(f"#{self.order_id} {self.customer_name} - {self.customer_phone} - {self.order_status} - {self.customer_address} {courier_id} Loaded") # TO ADD A BOOL PARAM FOR SHOWING THIS PRINT STATEMENT?
+            print(f"#{self.order_id} {self.customer_name} - {self.customer_phone} - {self.order_status} {courier_id} Loaded") # TO ADD A BOOL PARAM FOR SHOWING THIS PRINT STATEMENT?
         else:
             # you are creating from scratch, so you need a new, dynamically created order_id
             if self.orders_id_cache: # has items
@@ -65,9 +65,7 @@ class Orders:
                 self.orders_id_cache.append(self.order_id)
             # append it to the "global" list and print back confirmation
             self.orders_list.append(self)
-            print(f"Order #{self.order_id} Created\nCUSTOMER INFO\nName: {self.customer_name}, Phone: {self.customer_phone}, Address: {self.customer_address}\nORDER INFO") # TO ADD A BOOL PARAM FOR SHOWING THIS PRINT STATEMENT?
-            print(f"Order Status: {self.order_status}, Assigned Courier: {courier_id}, Order Price: £{self.order_price}")
-            print(f"Order Info For Restaurant : {self.products_ids}")
+            print(f"#{self.order_id} - {self.customer_name} - {self.customer_phone} - {self.order_status} {courier_id} Created") # TO ADD A BOOL PARAM FOR SHOWING THIS PRINT STATEMENT?  
         #END IF
     #END INIT    
 
@@ -156,13 +154,6 @@ def create_new_order(disp_size, rows):
                 print("Escape Key Logged")
                 lets_continue = False
 
-        # GET PRODUCTS FOR ORDER, UPDATE QUANTITIES, & GET FINAL PRICE
-        if lets_continue:
-            order_prdcts, order_cost = get_and_add_products(disp_size, rows)
-            if order_cost == "0":
-                print("Escape Key Logged")
-                lets_continue = False
-
         # GET COURIER
         if lets_continue:
             attached_courier = get_couriers_from_list_and_attach(disp_size, rows, name, phone_number, customer_address)
@@ -170,23 +161,28 @@ def create_new_order(disp_size, rows):
                 print("Escape Key Logged")
                 lets_continue = False
 
-        # GET ORDER STATUS
+        # GET PRODUCTS FOR ORDER, UPDATE QUANTITIES, & GET FINAL PRICE
         if lets_continue:
-            order_status = add_order_status(None)
-            if order_status == "0":
+            order_prdcts, order_cost = get_and_add_products(disp_size, rows)
+            if order_cost == "0":
                 print("Escape Key Logged")
                 lets_continue = False
             else:
                 break
             
+    #location = get_location_from_list(disp_size, name, phone_number)
+    #Couriers(name.strip(), str(phone_number), str(location))
+    #fm.format_display()
+    #get_zeros = lambda x : "0"*(4 - len(str(x)))
+    #cr = Couriers.couriers_list[-1] # the instances's address in memory
+    #print(f"{cr.name.title()} - Created Sucessfully\n{fm.print_dashes(return_it=True)}\nCourier #{get_zeros(cr.courier_id)}{cr.courier_id}\nLocation : {cr.location}\nMobile : {cr.phone_number}")
+    
     else:
         fm.print_dashes()
         print("Order Cancelled")
         fm.fake_input()
         return(False) # escape key logged, order cancelled, dont allow quick create by returning false (false - order not made)
     fm.print_dashes()
-    # MAKE THE ORDER
-    Orders(name, customer_address, phone_number, order_status, order_cost, None, attached_courier, order_prdcts)
     print("This Was A Triumph! - Order Made")
     fm.fake_input()
     return(True) # if made new (true - order made succesfully)
@@ -290,7 +286,8 @@ def get_couriers_from_list_and_attach(disp_size, rows, name=None, phone_number=N
 
 def get_and_add_products(disp_size, rows):
     basket_total = 0.0 
-    order_basket = [] 
+    order_basket = []
+    
     got_more = True
     while got_more:
         prdct.Product.paginated_print(prdct.Product, disp_size, rows, "Enter Page (step with .), To Select A Product First Hit '0' : ","Choose A Product To Add To The Order")
@@ -300,6 +297,7 @@ def get_and_add_products(disp_size, rows):
         prod_name = getattr(prod, "name")
         prod_numb = getattr(prod, "product_number")
         prod_quant = getattr(prod, "quantity")
+        
         if int(prod_quant) == 0:
             print("Try Again - Reloop!") # TO DO THIS, is easy af ffs just cba
         else:
@@ -308,13 +306,16 @@ def get_and_add_products(disp_size, rows):
             print("Commit Confirm - assuming yes")
             fm.print_dashes()
             print("Ok how many?")
+
             quant_is_good = True # DUH SHIT LIKE THIS AS FUNCTION!!!
             while quant_is_good:
                 how_many = int(input(f"Enter Amount ({prod_quant} available) : ")) 
                 if how_many > prod_quant:
                     print("Something Doesn't Quite Add Up... Try Again")
                     fm.fake_input()
-                    break     
+                    break
+                    
+            # got more moved     
                 order_basket = product_basket(prod_numb, prod_name, prod_price, how_many, order_basket)
                 total_basket_quant = 0
                 for order in order_basket:
@@ -336,107 +337,133 @@ def get_and_add_products(disp_size, rows):
                     got_more = False
                     break
                 break
-    # NESTED FUNCTION            
+                
+    
     def display_updated_basket(order_basket, original_order_basket):
-        print(f"Looks Like Some Items Sold Out!\nWe've Updated Your Basket\nPlease Reconfirm Your Order\n{fm.print_dashes()}\nUpdated Basket\n{fm.print_dashes()}") # THIS WILL BE THE NEW UPDATED FINAL DISPLAY
+        print("Looks Like Some Items Sold Out, We've Updated Your Order") # THIS WILL BE THE NEW UPDATED FINAL DISPLAY
         for product in order_basket:
+            #a, b, c, d = product
             print(f"{product[3]}x {product[1]}(#{product[0]}) @ £{(product[2] / product[3]):.2f} each - [£{product[2]} total]")
-    # END NESTED FUNCTION   
+            #print(a,b,c,d)
+        #
+        ### COMMIT CONFIRM THEN CLEAN UP THIS WHOLE SECTION A TAD, THEN ITS JUST -> ADD ORDER STATUS, SHUFFLE COURIERS AND RETURN PROPERLY AND IS DONE
+       ####################
+       ####################
+       ####################
+       ####################
+       ####################
+       ####################
+       ####################
+       ####################
+       ####################
+       ####################
+       ####################
+       ####################
+    
+
     print("Ok finalising your basket...")
     final_products_list = []
-    original_order_basket = order_basket
+    original_order_basket = sum(order_basket, [])
+    #print(original_order_basket)
+    #print(order_basket)
     order_basket = update_quants_from_basket(order_basket)
+
+    
+    
+
     final_products_quants_list = []
+
     if order_basket is None:
-        #print("order basket is none")
+        print("order basket is none")
         order_basket = original_order_basket
-        #print(f"replacing basket = {original_order_basket}")
-        #print(f"order basket is now = {order_basket}")
     else:
         display_updated_basket(order_basket, original_order_basket) #display updated basket and confirm function
     for item_info in order_basket:
         final_products_list.append(item_info[0]) # FOR STRICT GENERATION PROJECT
         final_products_quants_list.append((item_info[0],item_info[3])) # NEW! -> TO RETURN 
-    print(f"Final Basket Total\n{fm.print_dashes(return_it=True)}")
+    
+    #print(final_products_list)
+    #print(final_products_quants_list)
+    print("Basket Total")
     new_basket_total = 0
+    #print(basket_total)
     for product in order_basket:
         new_basket_total += product[2]
     basket_total = new_basket_total
-    #print(f"The Item Numbers Being Sent Are = {final_products_quants_list}")   
-    print(f"£{basket_total:.2f}")
-    fm.print_dashes()
-    print("COMMIT CONFIRM?")
-    fm.fake_input()
-    return(final_products_quants_list, basket_total) 
-   
+    #print(basket_total)
 
+    print(f"The Item Numbers Being Sent Are = {final_products_quants_list}") #print(f"Return Value (tbc) = {order_basket[-1][0]}")   
+    print(f"Total Final Price For Your Order = £{basket_total:.2f}")
+    
+    # it that works we're gravy here for now just cont (status then done?! could move courier select but meh, also do need to confirm the quantity is updating)
+    print("Returning as tuple! - dont forget to unpack on receipt")
+    return(final_products_quants_list, basket_total) # this is just the last one (being product number) added (needs to be a list), simple for loop (or comprehension!) will do the trick
+    
+    # create only products list quickly and return it PLUS final price
+    # get status
+    # fyi feel like attaching courier should come after the ordering process but whatever do in future
+    # needs to return the list of all product ids
+    # THE BASKET WILL BE COMPLETED AT THIS POINT SO YES THIS IS FINE IG - MAKE THIS (list of products) A LIST IN HERE THO FOR SURE
+
+    # UPDATE QUANTITIES FROM BASKET NEW FUNCTION 100!
+    # once confirmed, make live order (remaining things - create list thats only the products for order init, get status, get final price (have rn! save on confirm order here ig?))
+    # then update quantity
+        
+        
 def product_basket(item_num_to_add:int, item_name_to_add:str, item_price_to_add:float, how_many:int, basket_list=None):
     if basket_list is None:
         basket_list = []
     final_price_to_add = item_price_to_add * how_many  # *= duh
+
     basket_list.append([item_num_to_add, item_name_to_add, final_price_to_add, how_many])
     print(f"Current Basket = {basket_list}")
     return(basket_list)
 
+
 def update_quants_from_basket(order_basket):
     made_updates = False
     for i, item in enumerate(order_basket):
+        #print(order_basket)
+        #print(item)
+        #print(prdct.Product.products_list[item[0]-1])
         how_many = int(order_basket[i][3]) # might be unnecessary to force conversion here
+        #print(f"Updating Quantity For {prdct.Product.products_list[item[0]-1].name}")
+        #print(f"Current Quantity = {prdct.Product.products_list[item[0]-1].quantity}")
+        #print(f"User Wants = {how_many}")
         final_quant = (prdct.Product.products_list[item[0]-1].quantity)-(how_many)
+        #print(f"Final Quantity Will Be = {final_quant}") 
         if final_quant < 0:
-            #print(f"Uh Oh, Looks Like We Need To {0 - final_quant} From {prdct.Product.products_list[item[0]-1].name}")  
-            #print(f"Updating User Basket - {order_basket}")
-            #print(f"Updating Item Total - {order_basket[i][3]} + {final_quant}")
+            print(f"Uh Oh, Looks Like We Need To {0 - final_quant} From {prdct.Product.products_list[item[0]-1].name}")  
+            print(f"Updating User Basket - {order_basket}")
+            print(f"Updating Item Total - {order_basket[i][3]} + {final_quant}")
             order_basket[i][3] + final_quant
             made_updates = True   
             order_basket.pop(i) 
             # if ok then commit the change and return the order (ONLY RETURN IF VALID THEN COULD CHECK IF IS NONE ON RETURN - ACTUALLY YES AS WANT TO CONFIRM ANY UPDATES WITH THE USER)
         if made_updates == False:
             prdct.Product.products_list[item[0]-1].quantity -= how_many
-        #print(f"Updated Quantity = {prdct.Product.products_list[item[0]-1].quantity}")
+        print(f"Updated Quantity = {prdct.Product.products_list[item[0]-1].quantity}")
     if made_updates:
-        #print("Made Updates")
+        print("Made Updates")
         return(order_basket) # new and necessary - must return as may update it now 
     else:
         return(None)
-
-    # test
-    # then print orders to make sure is working as expected, print via class btw!
-    # then 
-    # natty lang and rich lib
-    # and remaining functions/functionality
-    # then new server stuff
-    # also new web scrape betting project idea
+ 
 
 
-def add_order_status(the_code = None):
-    '''adds order code as status to an order'''
-    print_string = ["[ 1 ] = Preparing", "[ 2 ] = Out For Delivery", "[ 3 ] = Delivered", "[ 4 ] = Recieved", "[ 5 ] = Cancelled", "[ 6 ] = Scheduling"]
-    if the_code == None: # for update not add
-        print("Choose Status To Set To Order") # want order number? could be done easily enough
-        fm.print_dashes()
-        print(*print_string, sep="\n") # print("[ 7 ] = Custom Code")  #not doing (rn anyways) but could 
-        fm.print_dashes()
-        user_code = int(input("Choose A Code For The Order : "))
-    else:
-        code_to_int = int(the_code)
-        user_code = code_to_int
-    if user_code == 1:
-        return("Preparing") 
-    elif user_code == 2:
-        return("Out For Delivery")
-    elif user_code == 3:
-        return("Delivered")
-    elif user_code == 4:
-        return("Recieved")
-    elif user_code == 5:
-        return("Cancelled")
-    elif user_code == 6:
-        return("Scheduling")
-    elif user_code == 0:
-        return("0") # escape key
-    else:
-        return("Error") # guna return error for debugging but ig should return preparing as default
+    # WILL NEED TO RESET THIS BASKET ON ORDER COMPLETE - just have some kinda bool param i can pass to wipe the list within
+    
+    # make basket own function duhhh!
+
+    # PRICING STUFF ooooo, will need to get quan from user here too!
+    # should allow to review at the end ig (quick pops to remove unwanted items, ability to add more quant and go back and add more too? maybe not last one tbf)
+    # WILL NEED TO SETATTR QUAN WHEN ORDER IS LIVE OOOO!
+    #
+    # honestly faf around with displays later just continue to take input, validation, etc now have the list attrs no probs!
+    #
+
+
+
 
 
 ## MAIN MENU ############################################################################################################################################################
