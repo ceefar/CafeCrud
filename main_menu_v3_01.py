@@ -56,12 +56,17 @@ def read_from_db():
     myresult = cursor.fetchall()
     for x in myresult:
         print(x)
+    
+    # NEED THIS HERE?
+    # Closes the connection to the DB, make sure you ALWAYS do this
+    #cursor.close()
+    #connection.close()
 
 
 
 ##########################################################################
 
-def main_menu(disp_size = 20, rows = 3):
+def main_menu(disp_size = 22, rows = 3):
     user_menu_input = 1
     while user_menu_input != "0":
         # PRINT THE MENU & GET THE USERS INPUT
@@ -69,7 +74,7 @@ def main_menu(disp_size = 20, rows = 3):
         user_menu_input = input("Enter Menu Selection : ")
         # GO TO COURIERS
         if user_menu_input == "1":
-            cour.main()
+            rows, disp_size = cour.main(rows, disp_size)
         # GO TO PRODCTS
         elif user_menu_input == "2":
             rows, disp_size = prdct.main_menu(rows, disp_size)

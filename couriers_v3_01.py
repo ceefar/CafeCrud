@@ -27,6 +27,9 @@ def get_from_db(command):
     cursor = connection.cursor()
     cursor.execute(f"{command}") 
     myresult = cursor.fetchall()
+    #.commit()
+    #cursor.close()
+    #connection.close()
     return(myresult)
 
 def read_from_db():
@@ -35,6 +38,16 @@ def read_from_db():
     myresult = cursor.fetchall()
     for x in myresult:
         print(x)
+    #connection.commit()
+    #cursor.close()
+    #connection.close()
+
+def add_to_db(command):
+    cursor = connection.cursor()
+    cursor.execute(f"{command}") 
+    connection.commit()
+    #cursor.close()
+    #connection.close()
 
 # CLASSES ########################################
 # COURIERS CLASS #################################
@@ -140,6 +153,9 @@ class Couriers:
         elif the_key == "location":
             new_value = get_location_from_list(disp_size)
         setattr(self.couriers_list[to_update-1], the_key, new_value)
+        print(f"UPDATE couriers SET {the_key} = '{new_value}' WHERE courier_db_id = {int(to_update-1)}")
+        add_to_db(f"UPDATE couriers SET {the_key} = '{new_value}' WHERE courier_db_id = {int(to_update)}")
+        
         print(f"{the_key} Updated To {new_value}")
 
 ## SAVE LOAD ###############################
@@ -177,6 +193,7 @@ class Couriers:
             for i, _ in enumerate(self.couriers_list):
                 writer.writerow({"courier_id":self.couriers_list[i].courier_id, "name":self.couriers_list[i].name, "phone_number":self.couriers_list[i].phone_number, "location":self.couriers_list[i].location, "availability":self.couriers_list[i].availability})
 
+
     def load_couriers_via_csv():
         templist = []
         # open csv and read as string
@@ -191,7 +208,6 @@ class Couriers:
         for index in range(len(templist)):
             x = templist[index].split(",")
             Couriers.csv_constructor(x[1], x[2], x[3], int(x[0]), x[4]) ## DUH TO TEST THIS WORKS PUT THAT CONVERT TO INT IN THE CSV CONSTRUCTOR (or duhhhhh DO THE SPLIT LOOP THERE JUST TO TEST ANYWAYS AND GIVE IT THE WHOLE TEMP LIST (then do the return loop in there and its sick, THEN could convert it to a generator and THEN ill finally figure out how to use that pickle generator lol)
-
 
 
     # HERES THE THING I DONT GET RIGHT...
@@ -253,7 +269,8 @@ def items_per_list_print_couriers(disp_size: int=22, rows = 3):
         print(print_string)
 
 
-####### TEST DB PRINT
+# TEST DB PRINT ##########################################################################################################################################################
+
 
 def db_print_test(disp_size: int=22, rows = 3):
     usable_screen = int(disp_size) - 10
@@ -265,14 +282,18 @@ def db_print_test(disp_size: int=22, rows = 3):
         total_pages += 1
     final_page = len(range(total_pages))
     print(f"FINAL PAGE : {final_page}")
+    print(f"Total Pages = {total_pages}")
     pages_display = [f"[ {x+1} ]" for x in range(total_pages)]
     pages_display = " - ".join(pages_display)
     fm.format_display(disp_size)
     want_more_print = True
     current_page = 1
+    dont_print = False
     query = f'SELECT * FROM couriers LIMIT {ipl}'
+    print(f"display size = {disp_size}")
+    print(f"display size = {rows}")
     while want_more_print: 
-        query = query
+        #query = query
         result = get_from_db(query)
         for courier in result:
             x = f"{courier[0]} ] - {courier[1]} - {courier[3]} [0{courier[2]}"
@@ -282,30 +303,39 @@ def db_print_test(disp_size: int=22, rows = 3):
             for x in range(spaces):
                 spaces_string += " "
             #print(courier)
-            print(f"[ {courier[0]} ] - {courier[1]} - {courier[3]} {spaces_string} [0{courier[2]}]")
+            if dont_print:
+                pass
+                #print("You've Entered The Wrong Page Number")
+            else:
+                print(f"[ {courier[0]} ] - {courier[1]} {spaces_string} {courier[3]} - [0{courier[2]}]")
 
         fm.print_dashes()
         print("")    
         print(pages_display)
+
+        #highlight_page = lambda h : f"[[ {h} ]]" if h == cpage else f"[ {h} ]" # language is so mad wtf            
+        #print(*[highlight_page(p) for p in pages_as_numbers_listed])
         
         paginate_action = (input("Enter A Page Number Or 0 To Quit : "))
-        if current_page > final_page:
+        #print(current_page)
+        #print(final_page)
+        #print(paginate_action)
+        fm.print_dashes()
+        g = (int(paginate_action))
+        if g > final_page:
             fm.format_display(disp_size)
             return_one_line_art()
+            current_page = int(paginate_action)
+            dont_print = True
         elif paginate_action != "0":
             fm.format_display(disp_size)
             current_page = int(paginate_action)
             query = f'SELECT * FROM couriers WHERE courier_db_id > {(current_page - 1) * ipl} LIMIT {ipl}'
+            dont_print = False
         else:
             #fm.format_display(disp_size)
             print("Ok Bye")
             want_more_print = False
-
-
-
-
-
-
 
 
 
@@ -340,6 +370,7 @@ def delete_mass_couriers(disp_size):
 def update_courier(disp_size):
     fm.format_display(disp_size)
     print(*(Couriers.generate_index_name_string(Couriers)), sep="\n")
+    #db_print_test()
     to_update = int(input("Enter A Number To Update")) # 0 escape key pls)
     keys_list = ["name", "phone_number", "location"]
     for the_key in keys_list:
@@ -348,8 +379,11 @@ def update_courier(disp_size):
             Couriers.update_attr_by_key(Couriers, to_update, the_key, disp_size)
     print(f"Courier #{getattr(Couriers.couriers_list[to_update-1], 'courier_id')} Successfully Updated")
     fm.format_display(end_with_dashes=True)
-    for the_key in keys_list:
-        print(f"{the_key.replace('_',' ').title()} : {getattr(Couriers.couriers_list[to_update-1], the_key)}")
+    try:
+        for the_key in keys_list:
+            print(f"{the_key.replace('_',' ').title()} : {getattr(Couriers.couriers_list[to_update], the_key)}")
+    except IndexError:
+        print("Blame The Database Not Me Jeez")
     fm.print_dashes()
     fm.fake_input()
     
@@ -367,6 +401,7 @@ def create_new_courier(disp_size):  # v2 validation, from inherent calls = needs
     fm.format_display()
     get_zeros = lambda x : "0"*(4 - len(str(x)))
     cr = Couriers.couriers_list[-1] # the instances's address in memory
+    add_new_courier_to_db(name,int(phone_number),location,int(cr.courier_id))
     print(f"{cr.name.title()} - Created Sucessfully\n{fm.print_dashes(return_it=True)}\nCourier #{get_zeros(cr.courier_id)}{cr.courier_id}\nLocation : {cr.location}\nMobile : {cr.phone_number}")
     fm.print_dashes()
 
@@ -428,8 +463,9 @@ def get_mobile(disp_size, name:str = None): # v2 validation = needs try except t
     return(num)
 
 
-def get_courier_info(self, the_key): # basically for group all above then loop it?
-    pass
+def add_new_courier_to_db(name:str,phone:int,locate:str,uwuid:int):
+    query = f'INSERT INTO couriers (name, phone_number, location, courier_uuid) VALUES ("{name}",{phone},"{locate}",{uwuid})'
+    add_to_db(query)
 
 
 ## MAIN MENU FUNCTIONS #######################################################################################################################################################
@@ -445,6 +481,8 @@ def main(rows=3, disp_size=22):
         if print_again: # for quick menu, returns the user to their place in this switch statement without printing the menu again
             # PRINT THE MENU & GET MENU INPUT  
             fm.format_display(disp_size)
+            #print(f"display size = {disp_size}")
+            #print(f"display size = {rows}")
             print(*menu_string, sep="\n")
             user_menu_input = input("Enter Menu Selection : ")
         
@@ -462,7 +500,9 @@ def main(rows=3, disp_size=22):
         # [2] PRINT COURIERS
         elif user_menu_input == "2":
             fm.format_display(disp_size)
-            items_per_list_print_couriers(disp_size, rows)
+            db_print_test(disp_size, rows)
+            print(f"display size = {disp_size}")
+            print(f"display size = {rows}")
             #print(*(Couriers.generate_index_name_string(Couriers)), sep="\n")
             fm.fake_input()
 
@@ -534,6 +574,7 @@ def main(rows=3, disp_size=22):
     Couriers.save_all_products_as_csv(Couriers)
     Couriers.save_objs_via_pickle(Couriers)
     print("SAVING...")
+    return(rows, disp_size)
 
 ## OTHER FUNCTIONS #######################################################################################################################################################
 
