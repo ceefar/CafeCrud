@@ -272,7 +272,7 @@ def get_couriers_name_from_id(ndx:int):
     return(final_result.strip())
 
 def db_print_orders(disp_size: int=22, rows = 3):
-    usable_screen = int(disp_size) - 10
+    usable_screen = int(disp_size) - 15
     ipl = usable_screen
     length_of_couriers = get_from_db(f'SELECT * FROM orders')
     length_of_couriers = len(length_of_couriers)
@@ -292,35 +292,64 @@ def db_print_orders(disp_size: int=22, rows = 3):
     #print(f"display size = {disp_size}")
     #print(f"display size = {rows}")
 
-    def create_spaces(string_to_space:str, space_count:int = 30):
-        to_space = len(string_to_space)
-        final_space_count = space_count - to_space 
-        string_of_spaces = ""
-        for x in range(final_space_count):
-            string_of_spaces += " "
-        return(string_of_spaces)
+    def create_spaces(string_to_space:str = "Some Default String", space_count:int = 30, just_return:int = None):
+        if just_return:
+            return_spaces = ""
+            for _ in range(just_return):
+                return_spaces += " "
+            return(return_spaces)
+        else:
+            to_space = len(string_to_space)
+            final_space_count = space_count - to_space 
+            string_of_spaces = ""
+            for x in range(final_space_count):
+                string_of_spaces += " "
+            return(string_of_spaces)
 
     while want_more_print: 
         #query = query
         result = get_from_db(query)
+        if dont_print:
+            pass
+        else:
+            print(f"Customer {create_spaces(just_return=22)} Order Status{create_spaces(just_return=24)} Order Delivery{create_spaces(just_return=35)} Customer Contact{create_spaces(just_return=9)}For Restaurant (product number, quantity)")
+            print(f"{fm.print_dashes(return_it=True)} {create_spaces(just_return=8)} {fm.print_dashes(return_it=True)} {create_spaces(just_return=13)} {fm.print_dashes(return_it=True)} {create_spaces(just_return=26)} {fm.print_dashes(amount_of_dashes=7, return_it=True)}{create_spaces(just_return=8)} {fm.print_dashes(return_it=True)}")
         for order_info in result:
             x = f"[ {order_info[0]} ] {order_info[1]}  {order_info[3]} {order_info[4]} {make_address_readable(order_info[2])} {order_info[5]} {get_couriers_name_from_id(order_info[7])}" #{order_info[8]}
-            current_str = len(x)
-            spaces = 90 - current_str
-            spaces_string = ""
-            for x in range(spaces):
-                spaces_string += " "
+            display1 = f"[ {order_info[0]} ] {order_info[1]}"
+            display2 = f"- £{order_info[5]} : {order_info[4]}"  
+            display3 = f"- {get_couriers_name_from_id(order_info[7])} - @ {make_address_readable(order_info[2])}"        
+            display4 = f"@ {order_info[3]}"  
+            spaces1 = create_spaces(display1, 30)
+            spaces2 = create_spaces(display2, 30)
+            spaces3 = create_spaces(display3, 48)
+            spaces4 = create_spaces(display4, 25)
+            #current_str = len(x)
+            #spaces = 90 - current_str
+            #spaces_string = ""
+            #for x in range(spaces):
+            #    spaces_string += " "
             #print(courier)
             if dont_print:
                 pass
                 #print("You've Entered The Wrong Page Number")
             else:
-                print(f"[ {order_info[0]} ] {order_info[1]} - [{order_info[4]} : {get_couriers_name_from_id(order_info[7])}] - £{order_info[5]} - @ {make_address_readable(order_info[2])} {spaces_string} Customer Contact : {order_info[3]}") # {order_info[8]}
+                print(f"[ {order_info[0]} ] {order_info[1]} {spaces1} £{order_info[5]} [PAID] - {order_info[4]} {spaces2} {get_couriers_name_from_id(order_info[7])} -> to {make_address_readable(order_info[2])} {spaces3} {order_info[3]} {spaces4} {order_info[8]}") # {order_info[8]}
 
-        fm.print_dashes()
+        if dont_print:
+            pass
+        else:
+            print(f"{fm.print_dashes(return_it=True)} {create_spaces(just_return=8)} {fm.print_dashes(return_it=True)} {create_spaces(just_return=13)} {fm.print_dashes(return_it=True)} {create_spaces(just_return=26)} {fm.print_dashes(amount_of_dashes=7, return_it=True)}{create_spaces(just_return=8)} {fm.print_dashes(return_it=True)}")
         print("")    
-        print(pages_display)
+        #print(pages_display)
 
+        page_numbs = [f"{x+1}" for x in range(total_pages)]
+        #print(f"current_page = {current_page}") 
+        #print(f"page_numbs = {page_numbs}") 
+        
+        highlight_page = lambda h : f"[[ {h} ]]" if h == str(current_page) else f"[ {h} ]" # language is so mad wtf            
+        print(*[highlight_page(p) for p in page_numbs])
+        print("")   
         paginate_action = (input("Enter A Page Number Or 0 To Quit : "))
         #print(current_page)
         #print(final_page)
