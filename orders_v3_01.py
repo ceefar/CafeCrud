@@ -119,10 +119,11 @@ class Orders:
 
 # PRINT FUNCTIONS
 
-# COURIERS - THIS NEEDS TO BE FIXED AGAIN BUT CBA
-# simple couriers print, code copied (could have just called the function knobhead!)
+    # COURIERS - THIS NEEDS TO BE FIXED AGAIN BUT CBA
+    # simple couriers print, code copied (could have just called the function knobhead!)
     def items_per_list_print_couriers(disp_size: int=22, rows = 3):
-        #ipl = rows #da fuck 
+        #ipl = rows #da fuck
+
         usable_screen = int(disp_size) - 10
         ipl = usable_screen
         i_list = []
@@ -144,20 +145,19 @@ class Orders:
         for short_list in i_list: 
             print_string = ""
             for index in short_list:
-                current_string = (f"{index} {cour.Couriers.couriers_list[index].name}")
-                spaces = 30 - (len(current_string))
+                cr = cour.Couriers.couriers_list[index]  
+                live_ords = get_live_orders_for_courier(index)
+                current_string = (f"{index} {cour.Couriers.couriers_list[index].name} {cr.location} {live_ords}")
+                spaces = 36 - (len(current_string))
                 spaces_string = ""
                 if int(index) + 1 == 10:
                     spaces -= 1
                 for x in range(spaces):
                     spaces_string += " "
-                cr = cour.Couriers.couriers_list[index]    
-                print_string += (f"[ {int(index) + 1} ] {cr.name} - {cr.location} {spaces_string}")
+                print_string += (f"[ {int(index) + 1} ] {cr.name} {spaces_string} ({live_ords}) - {cr.location}      ")
             print(print_string)
 
-
     # ORDERS
-
 
     def print_orders(self):
         fm.format_display(then_text = " PRINT ORDERS ".center(60, '-'))
@@ -257,6 +257,19 @@ class Orders:
 
 ## NEW DB PRINT STUFF ######################################################################################################################################################
 
+def make_address_readable(an_address:str):
+    # should add if no comma just clip it at X chars (like 15 or sumnt)
+    # print(an_address)
+    ndx = an_address.find(",")
+    new_addy = an_address[:ndx]
+    return(new_addy)
+
+def get_couriers_name_from_id(ndx:int):
+    query = f"SELECT c.name FROM couriers c WHERE c.courier_db_id = {ndx}"
+    result = str(get_from_db(query))
+    ndx = result.find("'",3)
+    final_result = result[3:ndx]
+    return(final_result.strip())
 
 def db_print_orders(disp_size: int=22, rows = 3):
     usable_screen = int(disp_size) - 10
@@ -276,21 +289,140 @@ def db_print_orders(disp_size: int=22, rows = 3):
     current_page = 1
     dont_print = False
     query = f'SELECT * FROM orders LIMIT {ipl}'
-    print(f"display size = {disp_size}")
-    print(f"display size = {rows}")
-    #while want_more_print: 
-    result = get_from_db(query)
-    for an_order in result:
-        print(an_order)
+    #print(f"display size = {disp_size}")
+    #print(f"display size = {rows}")
+
+    def create_spaces(string_to_space:str, space_count:int = 30):
+        to_space = len(string_to_space)
+        final_space_count = space_count - to_space 
+        string_of_spaces = ""
+        for x in range(final_space_count):
+            string_of_spaces += " "
+        return(string_of_spaces)
+
+    while want_more_print: 
+        #query = query
+        result = get_from_db(query)
+        for order_info in result:
+            x = f"[ {order_info[0]} ] {order_info[1]}  {order_info[3]} {order_info[4]} {make_address_readable(order_info[2])} {order_info[5]} {get_couriers_name_from_id(order_info[7])}" #{order_info[8]}
+            current_str = len(x)
+            spaces = 90 - current_str
+            spaces_string = ""
+            for x in range(spaces):
+                spaces_string += " "
+            #print(courier)
+            if dont_print:
+                pass
+                #print("You've Entered The Wrong Page Number")
+            else:
+                print(f"[ {order_info[0]} ] {order_info[1]} - [{order_info[4]} : {get_couriers_name_from_id(order_info[7])}] - £{order_info[5]} - @ {make_address_readable(order_info[2])} {spaces_string} Customer Contact : {order_info[3]}") # {order_info[8]}
+
+        fm.print_dashes()
+        print("")    
+        print(pages_display)
+
+        paginate_action = (input("Enter A Page Number Or 0 To Quit : "))
+        #print(current_page)
+        #print(final_page)
+        #print(paginate_action)
+        fm.print_dashes()
+        g = (int(paginate_action))
+        if g > final_page:
+            fm.format_display(disp_size)
+            cour.return_one_line_art()
+            current_page = int(paginate_action)
+            dont_print = True
+        elif paginate_action != "0":
+            fm.format_display(disp_size)
+            current_page = int(paginate_action)
+            query = f'SELECT * FROM orders WHERE order_id > {(current_page - 1) * ipl} LIMIT {ipl}'
+            dont_print = False
+        else:
+            #fm.format_display(disp_size)
+            print("Ok Bye")
+            want_more_print = False
 
 
-def db_join_test():
-    query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id"
+def db_join_by_courier(): # here right join will give you all the couriers even if they dont have an order which is kinda kewl
+    print("Printing All Couriers Orders (Even If None)")
+    fm.fake_input()
+    query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, c.name, c.courier_db_id FROM orders o RIGHT JOIN couriers c ON o.courier_id = c.courier_db_id ORDER BY c.courier_db_id"
     #ORDER BY...
     result = get_from_db(query)
     for a_result in result:
         print(a_result)
     fm.fake_input()
+
+
+def db_join_by_chosen_courier(disp_size=22, rows=3): # here right join will give you all the couriers even if they dont have an order which is kinda kewl
+    Orders.items_per_list_print_couriers(disp_size, rows)
+    fm.print_dashes()
+    chosen_courier = int(input("Enter Courier Number To Search Their Orders : "))
+    # confirm its in range here tbf
+    query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id WHERE courier_db_id = {chosen_courier} ORDER BY c.courier_db_id"
+    result = get_from_db(query)
+    for a_result in result:
+        print(a_result)
+    fm.fake_input()
+
+
+def db_join_by_chosen_courier_then_status(disp_size=22, rows=3): # here right join will give you all the couriers even if they dont have an order which is kinda kewl
+    fm.format_display(disp_size)
+    print(f"Some Title Info\n{fm.print_dashes(return_it=True)}\n")
+    Orders.items_per_list_print_couriers(disp_size, rows)
+    #
+    #
+    #
+    #
+    #
+    #
+    # JUST CALL THE OTHER ONE THATS BETTER & PAGINATED DUH, JUST PARAMETER FOR FINAL FORMATTING (is a bit excess but meh)
+    # - OR MAYBE IT CALLS THE PAGINATED BASED ON LEN OOO
+    #
+    #
+    #
+    #
+    #
+    #
+    chosen_courier = int(input("Enter Courier Number To Search Their Orders : "))
+    # confirm its in range here tbf
+    fm.print_dashes()
+    print("By Default You Will See Only Live Orders (Preparing/Out For Delivery)")
+    print("If You Would Like To See Orders For A Specific Order Status Please Enter The Order Code")
+    print("Or Enter 0 For Default Settings")
+    fm.print_dashes()
+    chosen_status = int(input("Enter A Valid Status Number or 0 To Continue : "))
+    # confirm its in range here?
+    if (chosen_status != 3 and chosen_status != 4 and chosen_status != 5 and chosen_status != 6): # if chosen_status not in valid_status_list (e.g. [3,4,5,6])
+        query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id WHERE c.courier_db_id = {chosen_courier} AND (o.order_status = 1 OR o.order_status = 2) ORDER BY c.courier_db_id"
+    else:
+        query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id WHERE c.courier_db_id = {chosen_courier} AND o.order_status = {chosen_status} ORDER BY c.courier_db_id"
+    
+    result = get_from_db(query)
+    for a_result in result:
+        print(a_result)
+    fm.fake_input()
+
+
+def db_join_by_courier_only_live_orders(): # here right join will give you all the couriers even if they dont have an order which is kinda kewl
+    query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, c.name, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id WHERE o.order_status = 1 OR o.order_status = 2 ORDER BY c.courier_db_id"
+    #ORDER BY...
+    result = get_from_db(query)
+    for a_result in result:
+        print(a_result)
+    fm.fake_input()
+
+
+def get_live_orders_for_courier(chosen_courier:int):
+    chosen_courier += 1
+    query = f"SELECT o.order_status FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id WHERE c.courier_db_id = {chosen_courier} AND (o.order_status = 1 OR o.order_status = 2) ORDER BY c.courier_db_id"
+    result = get_from_db(query)
+    return(len(result))
+
+    # OBVS JUST QUICKLY DO ONLY LIVE ORDERS FOR ALL COURIERS WILL BE EASY AF
+    # SOME FORMAT ISSUES AND WANT TO DISPLAY THE STATUS PROPERLY (tbf idk how it displays rn lol)
+    # THEN STRAIGHT AFTER DO ONLY LIVE ORDERS, THEN CONT - or option to input the code and it shows you for the code only ooo
+
 
 
 ## CREATE NEW ORDER FUNCTIONS ##############################################################################################################################################
@@ -353,7 +485,7 @@ def create_new_order(disp_size, rows):
     # MAKE THE ORDER
     Orders(name, customer_address, phone_number, order_status, order_cost, None, attached_courier, order_prdcts)
     ord_uwuid = Orders.orders_list[-1].order_id
-    print(ord_uwuid) #else use get attr
+    print(f"Order ID (for your records) : {ord_uwuid}") #else use get attr
     # some kinda confirm before adding it to the db - like try except for the class init method or sumnt maybe idk?
     add_new_order_to_db(name, customer_address, phone_number, order_status, order_cost, ord_uwuid, attached_courier, order_prdcts)
     print("This Was A Triumph! - Order Made")
@@ -541,6 +673,13 @@ def get_and_add_products(disp_size, rows):
     #print(f"The Item Numbers Being Sent Are = {final_products_quants_list}")   
     print(f"£{basket_total:.2f}")
     fm.print_dashes()
+    #
+    #
+    #
+    # IF BASKET < 10, ADD 3.99 DELIVERY CHARGE, CONFIRM WITH USER (can skip confirm and just tell them tbf)
+    #
+    #
+    #
     print("COMMIT CONFIRM?")
     fm.fake_input()
     return(final_products_quants_list, basket_total) 
@@ -612,7 +751,7 @@ def add_order_status(the_code = None):
     elif user_code == 6:
         return("Scheduling")
     elif user_code == 0:
-        return("0") # escape key
+        return("0") # escape key (tho when adding to db with no enum the status will be set to 0 which means error (which totally works tbf))
     else:
         return("Error") # guna return error for debugging but ig should return preparing as default
 
@@ -623,7 +762,7 @@ def add_order_status(the_code = None):
 def main_orders(): #rows=3, disp_size=22
     disp_size = 20
     rows = 3
-    menu_string = [f"ORDERS v3.01\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n","[ 1 ] Create New", "[ 2 ] Print Orders From DB", "[ 3 ] Print Join From DB (alpha)", "[ - ] -", "[ - ] -", "[ - ] -", "[ - ] -", "[ - ] -", "[ S ] -", "[ L ] -", "[ 0 ] Main Menu\n","- - - - - - - - - - -"]
+    menu_string = [f"ORDERS v3.01\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n","[ 1 ] Create New", "[ 2 ] Print Orders From DB", "[ 3 ] Print Join Cour X Ord From DB (alpha)", "[ 4 ] Print Join Cour X Ord From DB, Search By Courier ID", "[ 5 ] ... Then Status", "[ 6 ] Only Live Orders", "[ - ] -", "[ - ] -", "[ S ] -", "[ L ] -", "[ 0 ] Main Menu\n","- - - - - - - - - - -"]
     user_menu_input = 1
     print_again = True
     while user_menu_input != "0":
@@ -651,12 +790,20 @@ def main_orders(): #rows=3, disp_size=22
             fm.fake_input()
 
         if user_menu_input == "3":
-            db_join_test()
+            db_join_by_courier()
+
+        if user_menu_input == "4":
+            db_join_by_chosen_courier(disp_size, rows)
+        
+        if user_menu_input == "5":
+            db_join_by_chosen_courier_then_status(disp_size, rows)
+
+        if user_menu_input == "6":
+            db_join_by_courier_only_live_orders()
         
         ## REMOVE BELOW STUFF PLS
         
-
-        if user_menu_input == "5":
+        if user_menu_input == "9":
             print(*(cour.Couriers.generate_index_name_string(cour.Couriers)), sep="\n") 
             fm.fake_input()
 
@@ -668,4 +815,8 @@ if __name__ == "__main__":
 
 
 
-
+#### SPEC
+#
+#
+# 1 - PRINT ORDERS
+# 2 - CREATE NEW ORDER [COMPLETE]
