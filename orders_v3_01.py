@@ -1,14 +1,60 @@
 import format_random_v2_00 as fm
 import re
-import csv
 import couriers_v3_01 as cour
 import products_v1_02 as prdct
 
+import pymysql
+import os
+from dotenv import load_dotenv
+
 ## END IMPORTS
 
-# CLASSES ##################################################################################################################################################################
-# COURIERS CLASS #################################
 
+# Load environment variables from .env file
+load_dotenv()
+host = os.environ.get("mysql_host")
+user = os.environ.get("mysql_user")
+password = os.environ.get("mysql_pass")
+database = os.environ.get("mysql_db")
+
+# Establish a database connection
+connection = pymysql.connect(
+    host,
+    user,
+    password,
+    database
+)
+
+def get_from_db(command):
+    cursor = connection.cursor()
+    cursor.execute(f"{command}") 
+    myresult = cursor.fetchall()
+    #.commit()
+    #cursor.close()
+    #connection.close()
+    return(myresult)
+
+def read_from_db():
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM couriers") 
+    myresult = cursor.fetchall()
+    for x in myresult:
+        print(x)
+    #connection.commit()
+    #cursor.close()
+    #connection.close()
+
+def add_to_db(command):
+    cursor = connection.cursor()
+    cursor.execute(f"{command}") 
+    connection.commit()
+    #cursor.close()
+    #connection.close()
+
+
+# CLASSES ##################################################################################################################################################################
+
+# ORDERS CLASS #################################
 
 class Orders:
     """ Orders class stores each order object in a 'global' list, customer name, address, phone + courier id + product ids + order status and (new) tot price """
@@ -109,6 +155,7 @@ class Orders:
                 print_string += (f"[ {int(index) + 1} ] {cr.name} - {cr.location} {spaces_string}")
             print(print_string)
 
+
     # ORDERS
 
 
@@ -133,7 +180,8 @@ class Orders:
             one_or_two = input("Your Selection : ")
             fm.print_dashes()
 
-            if one_or_two == "1": # SEARCH - PROBS NEEDS GET ATTR UPDATE WHICH IS FINE
+            # SEARCH - PROBS (LIKE PROBLY DEFO) NEEDS GET ATTR UPDATE WHICH IS FINE (not tested at all, expecting will error like fuck)
+            if one_or_two == "1": 
                 fm.format_display(end_with_dashes = True)
                 wanted_order = int(input("Enter An Order Number [#1 - #{}] : ".format(len(self.orders_list))))
                 fm.format_display() 
@@ -207,6 +255,44 @@ class Orders:
 ## MAIN PROGRAM ############################################################################################################################################################
 
 
+## NEW DB PRINT STUFF ######################################################################################################################################################
+
+
+def db_print_orders(disp_size: int=22, rows = 3):
+    usable_screen = int(disp_size) - 10
+    ipl = usable_screen
+    length_of_couriers = get_from_db(f'SELECT * FROM orders')
+    length_of_couriers = len(length_of_couriers)
+    total_pages = int(length_of_couriers / ipl)
+    if (length_of_couriers % ipl) != 0:
+        total_pages += 1
+    final_page = len(range(total_pages))
+    print(f"FINAL PAGE : {final_page}")
+    print(f"Total Pages = {total_pages}")
+    pages_display = [f"[ {x+1} ]" for x in range(total_pages)]
+    pages_display = " - ".join(pages_display)
+    fm.format_display(disp_size)
+    want_more_print = True
+    current_page = 1
+    dont_print = False
+    query = f'SELECT * FROM orders LIMIT {ipl}'
+    print(f"display size = {disp_size}")
+    print(f"display size = {rows}")
+    #while want_more_print: 
+    result = get_from_db(query)
+    for an_order in result:
+        print(an_order)
+
+
+def db_join_test():
+    query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id"
+    #ORDER BY...
+    result = get_from_db(query)
+    for a_result in result:
+        print(a_result)
+    fm.fake_input()
+
+
 ## CREATE NEW ORDER FUNCTIONS ##############################################################################################################################################
 
 
@@ -266,9 +352,19 @@ def create_new_order(disp_size, rows):
     fm.print_dashes()
     # MAKE THE ORDER
     Orders(name, customer_address, phone_number, order_status, order_cost, None, attached_courier, order_prdcts)
+    ord_uwuid = Orders.orders_list[-1].order_id
+    print(ord_uwuid) #else use get attr
+    # some kinda confirm before adding it to the db - like try except for the class init method or sumnt maybe idk?
+    add_new_order_to_db(name, customer_address, phone_number, order_status, order_cost, ord_uwuid, attached_courier, order_prdcts)
     print("This Was A Triumph! - Order Made")
     fm.fake_input()
     return(True) # if made new (true - order made succesfully)
+
+
+def add_new_order_to_db(customer_name:str, customer_address:str, customer_phone:str, order_status:str, order_price:float, order_id:int, courier_id:int, products_ids:str):
+    print(products_ids)
+    query = f'INSERT INTO orders (customer_name, customer_address, customer_phone, order_status, order_price, order_uuid, courier_id, products_ids) VALUES ("{customer_name}","{customer_address}","{customer_phone}","{order_status}",{order_price},{order_id},{courier_id},"{products_ids}")'
+    add_to_db(query)
 
 
 def get_name(disp_size, first_run = False):  # v2 validation = needs try except to be acceptable
@@ -354,6 +450,7 @@ def get_couriers_from_list_and_attach(disp_size, rows, name=None, phone_number=N
             print("Uhhhh... I HATE zer0s") #... but you are zeros tho
             break
         else:
+            fm.format_display(disp_size)
             fm.print_dashes()
             cr = cour.Couriers.couriers_list[user_input - 1]    
             print(f"You Selected Courier - {cr.name}, (ID : {cr.courier_id})")
@@ -526,7 +623,7 @@ def add_order_status(the_code = None):
 def main_orders(): #rows=3, disp_size=22
     disp_size = 20
     rows = 3
-    menu_string = [f"ORDERS v3.01\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n","[ 1 ] Create New", "[ 2 ] Print All Orders v1", "[ - ] -", "[ - ] -", "[ - ] -", "[ - ] -", "[ - ] -", "[ - ] -", "[ S ] -", "[ L ] -", "[ 0 ] Main Menu\n","- - - - - - - - - - -"]
+    menu_string = [f"ORDERS v3.01\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n","[ 1 ] Create New", "[ 2 ] Print Orders From DB", "[ 3 ] Print Join From DB (alpha)", "[ - ] -", "[ - ] -", "[ - ] -", "[ - ] -", "[ - ] -", "[ S ] -", "[ L ] -", "[ 0 ] Main Menu\n","- - - - - - - - - - -"]
     user_menu_input = 1
     print_again = True
     while user_menu_input != "0":
@@ -550,11 +647,17 @@ def main_orders(): #rows=3, disp_size=22
                     print_again = True
 
         if user_menu_input == "2":
-            Orders.print_orders(Orders)
+            db_print_orders(disp_size, rows)
             fm.fake_input()
 
         if user_menu_input == "3":
-            print(*(cour.Couriers.generate_index_name_string(cour.Couriers)), sep="\n")
+            db_join_test()
+        
+        ## REMOVE BELOW STUFF PLS
+        
+
+        if user_menu_input == "5":
+            print(*(cour.Couriers.generate_index_name_string(cour.Couriers)), sep="\n") 
             fm.fake_input()
 
 

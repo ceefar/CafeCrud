@@ -60,7 +60,7 @@ def read_from_db():
     # NEED THIS HERE?
     # Closes the connection to the DB, make sure you ALWAYS do this
     #cursor.close()
-    #connection.close()
+    connection.close()
 
 
 
