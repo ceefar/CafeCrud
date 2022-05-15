@@ -81,16 +81,9 @@ def main_menu(disp_size = 22, rows = 3):
         # GO TO ORDERS
         elif user_menu_input == "3":
             ordrs.main_orders() #rows, disp_size
-        elif user_menu_input == "8":
-            for x, _ in enumerate(cour.Couriers.couriers_list):
-                print(cour.Couriers.couriers_list[x].name)
-        elif user_menu_input == "9":
-            cour.update_courier(disp_size)
+        # HIDDEN (print display info)
         elif user_menu_input == "5":
             print(f"Rows : {rows}, Display Size : {disp_size}")
-        elif user_menu_input == "6":
-            #prdct.Product.print_via_class_method()
-            prdct.Product.update_name(prdct.Product,15)
         #
         # IMPORTANT - THIS IS WHAT IM TRYING TO WRAP MY HEAD AROUND
         # by using class method you dont need to initialise an instance of product to be able to access the methods within the class, 

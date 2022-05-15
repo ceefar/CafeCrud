@@ -4,7 +4,11 @@ import couriers_v3_01 as cour
 import products_v1_02 as prdct
 import pymysql
 import os
+import random
 from dotenv import load_dotenv
+import colorama
+from colorama import Fore, Back, Style
+colorama.init(autoreset=True)
  
 
 ## END IMPORTS
@@ -496,7 +500,6 @@ def db_print_orders_for_every_courier(disp_size: int=22, rows = 3):
             elif paginate_action == "2":
                 query = f'SELECT o.customer_name, o.customer_address, o.order_price, o.order_id, o.order_status, c.name, c.courier_db_id FROM orders o RIGHT JOIN couriers c ON o.courier_id = c.courier_db_id ORDER BY c.courier_db_id LIMIT {ipl}, {ipl}'
             else:
-
                 query = f'SELECT o.customer_name, o.customer_address, o.order_price, o.order_id, o.order_status, c.name, c.courier_db_id FROM orders o RIGHT JOIN couriers c ON o.courier_id = c.courier_db_id  WHERE c.courier_db_id > 2 ORDER BY c.courier_db_id LIMIT {if_minus((current_page-2)*ipl-1)}, {ipl}'
             dont_print = False
         else:
@@ -517,7 +520,7 @@ def get_total_orders_for_courier(chosen_courier:int):
 
 def get_completed_orders_for_courier(chosen_courier:int):
     chosen_courier += 1
-    query = f"SELECT o.order_status FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id WHERE c.courier_db_id = {chosen_courier} AND (o.order_status = 1 OR o.order_status = 2) ORDER BY c.courier_db_id"
+    query = f"SELECT o.order_status FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id WHERE c.courier_db_id = {chosen_courier} AND (o.order_status = 3 OR o.order_status = 4 OR o.order_status = 5) ORDER BY c.courier_db_id"
     result = get_from_db(query)
     return(len(result))
 
@@ -563,47 +566,50 @@ def db_print_courier_for_search(disp_size: int=22, rows = 3):
         if dont_print:
             pass
         else:
-            print(f"Courier [ID/Name]{create_spaces(just_return=14)} Location{create_spaces(just_return=11)} Contact Number{create_spaces(just_return=6)}Order Info {create_spaces(just_return=6)}Total Orders & Completed Fuck it")
-            print(f"{fm.print_dashes(return_it=True)} {create_spaces(just_return=8)} {fm.print_dashes(amount_of_dashes=5, return_it=True)} {create_spaces(just_return=6)} {fm.print_dashes(amount_of_dashes=5, return_it=True)} {create_spaces(just_return=6)} {fm.print_dashes(amount_of_dashes=5, return_it=True)}")
+            print(f"Courier [ID/Name]{create_spaces(just_return=14)} Location{create_spaces(just_return=11)} Contact Number{create_spaces(just_return=6)}Active Orders{create_spaces(just_return=4)}All Orders {create_spaces(just_return=5)} Finalised Orders")
+            print(f"{fm.print_dashes(return_it=True)} {create_spaces(just_return=8)} {fm.print_dashes(amount_of_dashes=5, return_it=True)} {create_spaces(just_return=6)} {fm.print_dashes(amount_of_dashes=5, return_it=True)} {create_spaces(just_return=6)} {fm.print_dashes(amount_of_dashes=4, return_it=True)} {create_spaces(just_return=5)} {fm.print_dashes(amount_of_dashes=4, return_it=True)} {create_spaces(just_return=5)} {fm.print_dashes(amount_of_dashes=6, return_it=True)}")
         for order_info in result:
 
             # where dont print none was btw
             
             live_ords = get_live_orders_for_courier(order_info[0] - 1)
             total_ords = get_total_orders_for_courier(order_info[0] - 1)
+            comp_ords = get_completed_orders_for_courier(order_info[0] - 1)
 
             display1 = f"#{order_info[0]} - {order_info[1]}"
             display2 = f"{order_info[2]}"
             display3 = f"{order_info[3]}"
             display4 = f"{live_ords} Live"
+            display5 = f"{total_ords} Total"
             spaces1 = create_spaces(display1, 29)
             spaces2 = create_spaces(display2, 18)
             spaces3 = create_spaces(display3, 17)
-            spaces4 = create_spaces(display4, 15)
+            spaces4 = create_spaces(display4, 13)
+            spaces5 = create_spaces(display5, 13)
 
             if dont_print:
                 pass
             else:
-                print(f"#{order_info[0]} - {order_info[1]}  {spaces1} {order_info[2]} {spaces2} 0{order_info[3]} {spaces3} {live_ords} Live {spaces4} {total_ords}") 
+                print(f"{order_info[0]}. - {order_info[1]}  {spaces1} {order_info[2]} {spaces2} 0{order_info[3]} {spaces3} {live_ords} - Live {spaces4} {total_ords} - Total {spaces5} {comp_ords} - Done") 
 
         if dont_print:
             pass
         else:
-            print(f"{fm.print_dashes(return_it=True)} {create_spaces(just_return=8)} {fm.print_dashes(amount_of_dashes=5, return_it=True)} {create_spaces(just_return=6)} {fm.print_dashes(amount_of_dashes=5, return_it=True)} {create_spaces(just_return=6)} {fm.print_dashes(amount_of_dashes=5, return_it=True)}")
+            print(f"{fm.print_dashes(return_it=True)} {create_spaces(just_return=8)} {fm.print_dashes(amount_of_dashes=5, return_it=True)} {create_spaces(just_return=6)} {fm.print_dashes(amount_of_dashes=5, return_it=True)} {create_spaces(just_return=6)} {fm.print_dashes(amount_of_dashes=4, return_it=True)} {create_spaces(just_return=5)} {fm.print_dashes(amount_of_dashes=4, return_it=True)} {create_spaces(just_return=5)} {fm.print_dashes(amount_of_dashes=6, return_it=True)}")
         print("")    
-        #print(pages_display)
+        # print(pages_display)
 
         page_numbs = [f"{x+1}" for x in range(total_pages)]
-        #print(f"current_page = {current_page}") 
-        #print(f"page_numbs = {page_numbs}") 
+        # print(f"current_page = {current_page}") 
+        # print(f"page_numbs = {page_numbs}") 
         
         highlight_page = lambda h : f"[[ {h} ]]" if h == str(current_page) else f"[ {h} ]" # language is so mad wtf            
         print(*[highlight_page(p) for p in page_numbs])
         print("")   
         paginate_action = (input("Select Page Number Then Use 0 To Search By Courier : "))
-        #print(current_page)
-        #print(final_page)
-        #print(paginate_action)
+        # print(current_page)
+        # print(final_page)
+        # print(paginate_action)
         fm.print_dashes()
         g = (int(paginate_action))
         if g > final_page:
@@ -614,11 +620,32 @@ def db_print_courier_for_search(disp_size: int=22, rows = 3):
         elif paginate_action != "0":
             fm.format_display(disp_size)
             current_page = int(paginate_action)
-            query = f'SELECT c.courier_db_id, c.name, c.location, c.phone_number FROM couriers c LIMIT {(current_page - 1) * ipl}, {ipl}'
+            query = f'SELECT c.courier_db_id, c.name, c.location, c.phone_number FROM couriers c LIMIT {(current_page-1) * ipl}, {ipl}'
             dont_print = False
-        else:
-            #fm.format_display(disp_size)
-            print("Ok Bye")
+        else:      
+            # could totally print again on 'exit' for courier number select but meh is fine for now
+            fm.format_display(disp_size)
+            query = f'SELECT c.courier_db_id, c.name, c.location, c.phone_number FROM couriers c LIMIT {(current_page-1) * ipl}, {ipl}'
+            result = get_from_db(query)
+            print(f"Courier [ID/Name]{create_spaces(just_return=14)} Location{create_spaces(just_return=11)} Contact Number{create_spaces(just_return=6)}Active Orders{create_spaces(just_return=4)}All Orders {create_spaces(just_return=5)} Finalised Orders")
+            print(f"{fm.print_dashes(return_it=True)} {create_spaces(just_return=8)} {fm.print_dashes(amount_of_dashes=5, return_it=True)} {create_spaces(just_return=6)} {fm.print_dashes(amount_of_dashes=5, return_it=True)} {create_spaces(just_return=6)} {fm.print_dashes(amount_of_dashes=4, return_it=True)} {create_spaces(just_return=5)} {fm.print_dashes(amount_of_dashes=4, return_it=True)} {create_spaces(just_return=5)} {fm.print_dashes(amount_of_dashes=6, return_it=True)}")
+            for order_info in result:
+                live_ords = get_live_orders_for_courier(order_info[0] - 1)
+                total_ords = get_total_orders_for_courier(order_info[0] - 1)
+                comp_ords = get_completed_orders_for_courier(order_info[0] - 1)
+                display1 = f"#{order_info[0]} - {order_info[1]}"
+                display2 = f"{order_info[2]}"
+                display3 = f"{order_info[3]}"
+                display4 = f"{live_ords} Live"
+                display5 = f"{total_ords} Total"
+                spaces1 = create_spaces(display1, 29)
+                spaces2 = create_spaces(display2, 18)
+                spaces3 = create_spaces(display3, 17)
+                spaces4 = create_spaces(display4, 13)
+                spaces5 = create_spaces(display5, 13)
+                print(f"{order_info[0]}. - {order_info[1]}  {spaces1} {order_info[2]} {spaces2} 0{order_info[3]} {spaces3} {live_ords} - Live {spaces4} {total_ords} - Total {spaces5} {comp_ords} - Done") 
+            print(f"{fm.print_dashes(return_it=True)} {create_spaces(just_return=8)} {fm.print_dashes(amount_of_dashes=5, return_it=True)} {create_spaces(just_return=6)} {fm.print_dashes(amount_of_dashes=5, return_it=True)} {create_spaces(just_return=6)} {fm.print_dashes(amount_of_dashes=4, return_it=True)} {create_spaces(just_return=5)} {fm.print_dashes(amount_of_dashes=4, return_it=True)} {create_spaces(just_return=5)} {fm.print_dashes(amount_of_dashes=6, return_it=True)}")
+            print("")
             want_more_print = False
 
  
@@ -634,52 +661,221 @@ def db_join_by_chosen_courier(disp_size=22, rows=3): # here right join will give
     fm.fake_input()
 
 
+# NEW ################################################################################################################
 
 
 
-
-# ABOVE = NEW ################################################################################################################
-
-
-
-
-
-def db_join_by_chosen_courier_then_status(disp_size=22, rows=3): # here right join will give you all the couriers even if they dont have an order which is kinda kewl
+def db_join_by_chosen_courier_then_status(disp_size=22, rows=3): # then guess could do if init display list too big just show live, then else show something else... (or just paginate from the start duh!)
     fm.format_display(disp_size)
     print(f"Some Title Info\n{fm.print_dashes(return_it=True)}\n")
-    Orders.items_per_list_print_couriers(disp_size, rows)
+    #Orders.items_per_list_print_couriers(disp_size, rows)
     #
     #
-    #
-    #
-    #
-    #
-    # JUST CALL THE OTHER ONE THATS BETTER & PAGINATED DUH, JUST PARAMETER FOR FINAL FORMATTING (is a bit excess but meh)
-    # - OR MAYBE IT CALLS THE PAGINATED BASED ON LEN OOO
-    #
-    #
-    #
-    #
+    db_print_courier_for_search(disp_size, rows)
     #
     #
     chosen_courier = int(input("Enter Courier Number To Search Their Orders : "))
+     # confirm its in range here tbf
+    fm.print_dashes()
+    query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id WHERE c.courier_db_id = {chosen_courier} ORDER BY c.courier_db_id"
+    go_again = True
+    chosen_status = 0
+    max_length_of_all_couriers_orders = len(get_from_db(query)) # if this is too long change the query and obvs ensure it links up properly throughout that page is changed n shit
+
+    def create_spaces(string_to_space:str = "DFLT", space_count:int = 30, just_return:int = None):
+        if just_return:
+            return_spaces = ""
+            for _ in range(just_return):
+                return_spaces += " "
+            return(return_spaces)
+        else:
+            to_space = len(string_to_space)
+            final_space_count = space_count - to_space 
+            string_of_spaces = ""
+            for x in range(final_space_count):
+                string_of_spaces += " "
+            return(string_of_spaces)
+
+    while go_again:
+        fm.format_display(disp_size)
+        if chosen_status == 9:
+            query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id WHERE c.courier_db_id = {chosen_courier} ORDER BY c.courier_db_id"
+        elif chosen_status != 0:
+            query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id WHERE c.courier_db_id = {chosen_courier} AND o.order_status = {chosen_status} ORDER BY c.courier_db_id"
+            #fm.format_display(disp_size)
+        result = get_from_db(query)
+
+        def print_full_key_with_caps_for_current():
+            status_dict = {1:"preparing", 2:"delivering", 3:"delivered", 4:"recieved", 5:"cancelled", 6:"scheduling", 9:"all"}
+            print(f"Order Status Key\n{fm.print_dashes(return_it=True)}")
+            if_current_make_bold = lambda x,y : f" {x.upper()} <<" if y == chosen_status or y == 0 else x
+            for num, status in status_dict.items():
+                print(f"[ {num} ] {if_current_make_bold(status.title(), num)}")
+
+        def status_num_to_word(statnum:int):
+            status_dict = {1:"preparing", 2:"delivering", 3:"delivered", 4:"recieved", 5:"cancelled", 6:"scheduling", 0:"all", 9:"all"}
+            rv = status_dict.get(statnum)
+            return(rv.title())
+        
+        #print(chosen_status)
+        print_full_key_with_caps_for_current()
+        #print(f"Order Status Key\n{fm.print_dashes(return_it=True)}\n[ 1 ] Preparing\n[ 2 ] Out For Delivery\n[ 3 ] Delivered\n[ 4 ] Recieved\n[ 5 ] Cancelled\n[ 6 ] Scheduling\n[ 9 ] All")
+        print("")
+        print(f"{status_num_to_word(chosen_status)} Orders")       
+        print(f"Courier #{chosen_courier} - {get_couriers_name_from_id(chosen_courier)}")   
+        print("")    
+        fm.print_dashes()
+        for order_info in result:
+            display1 = f"#{order_info[2]} - {order_info[0]}"
+            display2 = f"{order_info[3]}"
+            display3 = f"{order_info[1]}"
+            spaces1 = create_spaces(display1, 29)
+            spaces2 = create_spaces(display2, 18)
+            spaces3 = create_spaces(display3, 17)
+            print(f"{order_info[2]} - {order_info[0]} {spaces1} {order_info[3]} {spaces2} £{order_info[1]} {spaces3}")
+
+        if len(result) <= max_length_of_all_couriers_orders - 1:
+            the_diff_to_add_lines = (max_length_of_all_couriers_orders - len(result))
+            if len(result) == 0:
+                the_diff_to_add_lines -= 1
+            for _ in range(the_diff_to_add_lines):
+                print("-")
+            #x = ["\n" for _ in range(the_diff_to_add_lines)] probs needs minus 1 too if you wanna do it    
+            #print(*x)
+                
+        if len(result) == 0:
+            print(return_one_line_art())
+
+        fm.print_dashes()
+        print("")
+
+        #print("If You Would Like To See Orders For A Specific Order Status Please Enter The Order Code")
+        chosen_status = int(input("Enter A Status Number To Filter By It, OR 9 To View All, OR 0 To Exit : ")) # will type error if not an int so do convert outside and then can work it with below if statement
+        if chosen_status != 1 and chosen_status != 2 and chosen_status != 3 and chosen_status != 4 and chosen_status != 5 and chosen_status != 6 and chosen_status != 9 and chosen_status != 0: #make it 9?
+            chosen_status = 9
+        # confirm its in range here?
+        if (chosen_status != 0):
+            print("And Go Again") # lol remove this knobhead
+        else:
+            print("Well End Function Then")
+            go_again = False
+            break
+    
+
+#####################################################################################################################################
+
+
+
+
+def db_print_search_by_status(disp_size=22, rows=3): # then guess could do if init display list too big just show live, then else show something else... (or just paginate from the start duh!)
+    fm.format_display(disp_size)
+    print(f"Some Title Info\n{fm.print_dashes(return_it=True)}\n")
+    # chosen_courier = int(input("Enter Courier Number To Search Their Orders : "))
     # confirm its in range here tbf
     fm.print_dashes()
-    print("By Default You Will See Only Live Orders (Preparing/Out For Delivery)")
-    print("If You Would Like To See Orders For A Specific Order Status Please Enter The Order Code")
-    print("Or Enter 0 For Default Settings")
-    fm.print_dashes()
-    chosen_status = int(input("Enter A Valid Status Number or 0 To Continue : "))
-    # confirm its in range here?
-    if (chosen_status != 3 and chosen_status != 4 and chosen_status != 5 and chosen_status != 6): # if chosen_status not in valid_status_list (e.g. [3,4,5,6])
-        query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id WHERE c.courier_db_id = {chosen_courier} AND (o.order_status = 1 OR o.order_status = 2) ORDER BY c.courier_db_id"
-    else:
-        query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id WHERE c.courier_db_id = {chosen_courier} AND o.order_status = {chosen_status} ORDER BY c.courier_db_id"
+    query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id ORDER BY c.courier_db_id"
+    go_again = True
+    chosen_status = 0
+    max_length_of_all_couriers_orders = len(get_from_db(query)) # if this is too long change the query and obvs ensure it links up properly throughout that page is changed n shit
+
+    def create_spaces(string_to_space:str = "DFLT", space_count:int = 30, just_return:int = None):
+        if just_return:
+            return_spaces = ""
+            for _ in range(just_return):
+                return_spaces += " "
+            return(return_spaces)
+        else:
+            to_space = len(string_to_space)
+            final_space_count = space_count - to_space 
+            string_of_spaces = ""
+            for x in range(final_space_count):
+                string_of_spaces += " "
+            return(string_of_spaces)
+
+    while go_again:
+        fm.format_display(disp_size)
+        if chosen_status == 9:
+            query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id ORDER BY c.courier_db_id"
+        elif chosen_status != 0:
+            query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id AND o.order_status = {chosen_status} ORDER BY c.courier_db_id"
+            #fm.format_display(disp_size)
+        result = get_from_db(query)
+
+        def print_full_key_with_caps_for_current():
+            status_dict = {1:"preparing", 2:"delivering", 3:"delivered", 4:"recieved", 5:"cancelled", 6:"scheduling", 9:"all"}
+            print(f"Order Status Key\n{fm.print_dashes(return_it=True)}")
+            if_current_make_bold = lambda x,y : f"-{x.upper()} <<" if y == chosen_status or y == 0 else x
+            for num, status in status_dict.items():
+                if num == chosen_status:
+                    print(f"{Fore.GREEN}[ {num} ] {if_current_make_bold(status.title(), num)}")
+                else:
+                    print(f"{Fore.LIGHTBLACK_EX}[ {num} ] {if_current_make_bold(status.title(), num)}")
+
+        def status_num_to_word(statnum:int):
+            status_dict = {1:"preparing", 2:"delivering", 3:"delivered", 4:"recieved", 5:"cancelled", 6:"scheduling", 0:"all", 9:"all"}
+            rv = status_dict.get(statnum)
+            return(rv.title())
+        
+        print(chosen_status)
+        print(type(chosen_status))
+        #
+        #
+        #
+        #
+        # IF CHOSEN STATUS == 0, RUN BELOW FUNCT WITH NEW PARAMETER WHICH WILL AUTO HL "ALL"
+        # ELSE JUST RUN IT WITHOUT THE PARAMETER BOSH!
+        #
+        #
+        #
+        #
+        #
+        print_full_key_with_caps_for_current()
+        #print(f"Order Status Key\n{fm.print_dashes(return_it=True)}\n[ 1 ] Preparing\n[ 2 ] Out For Delivery\n[ 3 ] Delivered\n[ 4 ] Recieved\n[ 5 ] Cancelled\n[ 6 ] Scheduling\n[ 9 ] All")
+        print("")
+        print(f"{status_num_to_word(chosen_status)} Orders")       
+        print("")    
+        fm.print_dashes()
+        for order_info in result:
+            display1 = f"#{order_info[2]} - {order_info[0]}"
+            display2 = f"{order_info[3]}"
+            display3 = f"{order_info[1]}"
+            spaces1 = create_spaces(display1, 29)
+            spaces2 = create_spaces(display2, 18)
+            spaces3 = create_spaces(display3, 17)
+            print(f"{order_info[2]} - {order_info[0]} {spaces1} {order_info[3]} {spaces2} £{order_info[1]} {spaces3}")
+
+        if len(result) <= max_length_of_all_couriers_orders - 1:
+            the_diff_to_add_lines = (max_length_of_all_couriers_orders - len(result))
+            if len(result) == 0:
+                the_diff_to_add_lines -= 1
+            for _ in range(the_diff_to_add_lines):
+                print("-")
+            #x = ["\n" for _ in range(the_diff_to_add_lines)] probs needs minus 1 too if you wanna do it    
+            #print(*x)
+                
+        if len(result) == 0:
+            print(return_one_line_art())
+
+        fm.print_dashes()
+        print("")
+
+        #print("If You Would Like To See Orders For A Specific Order Status Please Enter The Order Code")
+        chosen_status = int(input("Enter A Status Number To Filter By It, OR 9 To View All, OR 0 To Exit : ")) # will type error if not an int so do convert outside and then can work it with below if statement
+        if chosen_status != 1 and chosen_status != 2 and chosen_status != 3 and chosen_status != 4 and chosen_status != 5 and chosen_status != 6 and chosen_status != 9 and chosen_status != 0: #make it 9?
+            chosen_status = 9
+        # confirm its in range here?
+        if (chosen_status != 0):
+            print("And Go Again") # lol remove this knobhead
+        else:
+            print("Well End Function Then")
+            go_again = False
+            break
     
-    result = get_from_db(query)
-    for a_result in result:
-        print(a_result)
-    fm.fake_input()
+
+
+
+
+#####################################################################################################################################
 
 
 def db_join_by_courier_only_live_orders(): # here right join will give you all the couriers even if they dont have an order which is kinda kewl
@@ -1040,7 +1236,8 @@ def add_order_status(the_code = None):
 def main_orders(): #rows=3, disp_size=22
     disp_size = 20
     rows = 3
-    menu_string = [f"ORDERS v3.01\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n","[ 1 ] Create New", "[ 2 ] Print Orders List [DB, Paginated, Only Valid]", "[ 3 ] Print Orders By Courier [DB, Paginated, Inc None]", "[ - ] -", "[ - ] -", "[ 6 ] IN PROG Search Orders By Courier + Status [DB, Live/Completed Orders]", "[ 7 ] ?", "[ 8 ] ?", "[ - ] -", "[ S ] -", "[ L ] -", "[ 0 ] Main Menu\n","- - - - - - - - - - -"]
+    add_spaces = lambda x : x # take each line and add spaces appropriately should be easy might need full def tho
+    menu_string = [f"ORDERS v3.01\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n","[ 1 ] Create New", "[ 2 ] Print Orders List [DB, Paginated, Only Valid]", "[ 3 ] Print Orders By Courier [DB, Paginated, Inc None]", "[ 4 ] Search Orders By Courier [DB, Paginated, Only Valid]", "[ - ] -", "[ 6 ] IN PROG Search Orders By Status", "[ - ] -", "[ - ] -", "[ - ] -", "[ S ] -", "[ L ] -", "[ 0 ] Main Menu\n","- - - - - - - - - - -"]
     user_menu_input = 1
     print_again = True
     while user_menu_input != "0":
@@ -1071,20 +1268,22 @@ def main_orders(): #rows=3, disp_size=22
             db_print_orders_for_every_courier(disp_size, rows)
 
         if user_menu_input == "4":
-            db_print_courier_for_search(disp_size, rows)
-
-        if user_menu_input == "6":
-            db_join_by_chosen_courier(disp_size, rows)
-        
-        if user_menu_input == "7":
+            #db_print_courier_for_search(disp_size, rows)
             db_join_by_chosen_courier_then_status(disp_size, rows)
 
-        if user_menu_input == "8":
+        if user_menu_input == "6":
+            db_print_search_by_status(disp_size, rows)
+            #db_join_by_chosen_courier(disp_size, rows)
+    
+        if user_menu_input == "7":
             db_join_by_courier_only_live_orders()
 
 
+# can also use this for excepts/errors tbf lol
+def return_one_line_art():
+    one_line_ascii_art_list = ["̿' ̿'\̵͇̿̿\з=(◕_◕)=ε/̵͇̿̿/'̿'̿ ̿  NOBODY MOVE!","( ͡° ͜ʖ ͡°) *STARING INTENSIFIES*","(╯°□°)--︻╦╤─ - - - WATCH OUT HE'S GOT A GUN","(⌐■_■)--︻╦╤─ - - - GET DOWN MR PRESIDENT","┻━┻︵  \(°□°)/ ︵ ┻━┻ FLIPPIN DEM TABLES","(ノಠ益ಠ)ノ彡︵ ┻━┻︵ ┻━┻ NO TABLE IS SAFE","ʕつಠᴥಠʔつ ︵ ┻━┻ HIDE YO KIDS HIDE YO TABLES","(ಠ_ಠ)┌∩┐ BYE BISH","(ง •̀_•́)ง FIGHT ME FOKER!","[¬º-°]¬  [¬º-°]¬ ZOMBIES RUN!","(╭ರ_•́) CURIOUSER AND CURIOUSER","つ ◕_◕ ༽つ つ ◕_◕ ༽つ TAKE MY ENERGY","༼つಠ益ಠ༽つ ─=≡ΣO)) HADOUKEN!"]
+    return(one_line_ascii_art_list[random.randint(0, len(one_line_ascii_art_list)-1)])
         
-    
 
 if __name__ == "__main__":
     main_orders()
