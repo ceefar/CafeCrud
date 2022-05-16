@@ -8,6 +8,7 @@ import pymysql
 import os
 from dotenv import load_dotenv
 
+
 # Load environment variables from .env file
 load_dotenv()
 host = os.environ.get("mysql_host")
@@ -17,11 +18,12 @@ database = os.environ.get("mysql_db")
 
 # Establish a database connection
 connection = pymysql.connect(
-    host,
-    user,
-    password,
-    database
+    host = host,
+    user = user,
+    password = password,
+    database = database
 )
+
 
 def get_from_db(command):
     cursor = connection.cursor()

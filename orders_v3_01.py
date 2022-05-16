@@ -23,10 +23,10 @@ database = os.environ.get("mysql_db")
 
 # Establish a database connection
 connection = pymysql.connect(
-    host,
-    user,
-    password,
-    database
+    host = host,
+    user = user,
+    password = password,
+    database = database
 )
 
 def get_from_db(command):
@@ -319,7 +319,7 @@ def db_print_orders(disp_size: int=22, rows = 3):
         if dont_print:
             pass
         else:
-            print(f"Customer {create_spaces(just_return=22)} Order Status{create_spaces(just_return=24)} Order Delivery{create_spaces(just_return=35)} Customer Contact{create_spaces(just_return=9)}For Restaurant (product number, quantity)")
+            print(f"{Style.BRIGHT}Customer {create_spaces(just_return=22)} Order Status{create_spaces(just_return=24)} Order Delivery{create_spaces(just_return=35)} Customer Contact{create_spaces(just_return=9)}For Restaurant (product number, quantity)")
             print(f"{fm.print_dashes(return_it=True)} {create_spaces(just_return=8)} {fm.print_dashes(return_it=True)} {create_spaces(just_return=13)} {fm.print_dashes(return_it=True)} {create_spaces(just_return=26)} {fm.print_dashes(amount_of_dashes=7, return_it=True)}{create_spaces(just_return=8)} {fm.print_dashes(return_it=True)}")
         for order_info in result:
             x = f"[ {order_info[0]} ] {order_info[1]}  {order_info[3]} {order_info[4]} {make_address_readable(order_info[2])} {order_info[5]} {get_couriers_name_from_id(order_info[7])}" #{order_info[8]}
@@ -343,7 +343,7 @@ def db_print_orders(disp_size: int=22, rows = 3):
                 pass
                 #print("You've Entered The Wrong Page Number")
             else:
-                print(f"[ {order_info[0]} ] {order_info[1]} {spaces1} £{order_info[5]} [PAID] - {order_info[4]} {spaces2} {get_couriers_name_from_id(order_info[7])} -> to {make_address_readable(order_info[2])} {spaces3} {order_info[3]} {spaces4} {order_info[8]}") # {order_info[8]}
+                print(f"{Fore.BLUE}[ {Fore.CYAN}{order_info[0]} {Fore.BLUE}] {Fore.RESET}{order_info[1]} {spaces1} £{order_info[5]} [PAID] - {order_info[4]} {spaces2} {get_couriers_name_from_id(order_info[7])} -> to {make_address_readable(order_info[2])} {spaces3} {order_info[3]} {spaces4} {order_info[8]}") # {order_info[8]}
 
         if dont_print:
             pass
@@ -356,7 +356,7 @@ def db_print_orders(disp_size: int=22, rows = 3):
         #print(f"current_page = {current_page}") 
         #print(f"page_numbs = {page_numbs}") 
         
-        highlight_page = lambda h : f"[[ {h} ]]" if h == str(current_page) else f"[ {h} ]" # language is so mad wtf            
+        highlight_page = lambda h : f"{Fore.BLUE}[[ {Fore.CYAN}{h}{Fore.BLUE} ]]" if h == str(current_page) else f"[ {h} ]" # language is so mad wtf            
         print(*[highlight_page(p) for p in page_numbs])
         print("")   
         paginate_action = (input("Enter A Page Number Or 0 To Quit : "))
@@ -664,7 +664,6 @@ def db_join_by_chosen_courier(disp_size=22, rows=3): # here right join will give
 # NEW ################################################################################################################
 
 
-
 def db_join_by_chosen_courier_then_status(disp_size=22, rows=3): # then guess could do if init display list too big just show live, then else show something else... (or just paginate from the start duh!)
     fm.format_display(disp_size)
     print(f"Some Title Info\n{fm.print_dashes(return_it=True)}\n")
@@ -773,7 +772,7 @@ def db_print_search_by_status(disp_size=22, rows=3): # then guess could do if in
     # chosen_courier = int(input("Enter Courier Number To Search Their Orders : "))
     # confirm its in range here tbf
     fm.print_dashes()
-    query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id ORDER BY c.courier_db_id"
+    query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, o.customer_address, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id ORDER BY c.courier_db_id"
     go_again = True
     chosen_status = 0
     max_length_of_all_couriers_orders = len(get_from_db(query)) # if this is too long change the query and obvs ensure it links up properly throughout that page is changed n shit
@@ -795,16 +794,18 @@ def db_print_search_by_status(disp_size=22, rows=3): # then guess could do if in
     while go_again:
         fm.format_display(disp_size)
         if chosen_status == 9:
-            query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id ORDER BY c.courier_db_id"
+            query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, o.customer_address, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id ORDER BY c.courier_db_id"
         elif chosen_status != 0:
-            query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id AND o.order_status = {chosen_status} ORDER BY c.courier_db_id"
+            query = f"SELECT o.customer_name, o.order_price, o.order_id, o.order_status, o.customer_address, c.courier_db_id FROM orders o INNER JOIN couriers c ON o.courier_id = c.courier_db_id AND o.order_status = {chosen_status} ORDER BY c.courier_db_id"
             #fm.format_display(disp_size)
         result = get_from_db(query)
 
         def print_full_key_with_caps_for_current():
             status_dict = {1:"preparing", 2:"delivering", 3:"delivered", 4:"recieved", 5:"cancelled", 6:"scheduling", 9:"all"}
             print(f"Order Status Key\n{fm.print_dashes(return_it=True)}")
-            if_current_make_bold = lambda x,y : f"-{x.upper()} <<" if y == chosen_status or y == 0 else x
+
+            if_current_make_bold = lambda x,y : f" {x.upper()} <<" if y == chosen_status or y == 0 else x
+
             for num, status in status_dict.items():
                 if num == chosen_status:
                     print(f"{Fore.GREEN}[ {num} ] {if_current_make_bold(status.title(), num)}")
@@ -812,37 +813,27 @@ def db_print_search_by_status(disp_size=22, rows=3): # then guess could do if in
                     print(f"{Fore.LIGHTBLACK_EX}[ {num} ] {if_current_make_bold(status.title(), num)}")
 
         def status_num_to_word(statnum:int):
-            status_dict = {1:"preparing", 2:"delivering", 3:"delivered", 4:"recieved", 5:"cancelled", 6:"scheduling", 0:"all", 9:"all"}
+            status_dict = {1:"preparing", 2:"out for delivery", 3:"delivered", 4:"recieved", 5:"cancelled", 6:"scheduling", 0:"all", 9:"all"}
             rv = status_dict.get(statnum)
             return(rv.title())
         
-        print(chosen_status)
-        print(type(chosen_status))
-        #
-        #
-        #
-        #
-        # IF CHOSEN STATUS == 0, RUN BELOW FUNCT WITH NEW PARAMETER WHICH WILL AUTO HL "ALL"
-        # ELSE JUST RUN IT WITHOUT THE PARAMETER BOSH!
-        #
-        #
-        #
-        #
-        #
+        # would be nice to fix for very first display but meh is ok dw
         print_full_key_with_caps_for_current()
         #print(f"Order Status Key\n{fm.print_dashes(return_it=True)}\n[ 1 ] Preparing\n[ 2 ] Out For Delivery\n[ 3 ] Delivered\n[ 4 ] Recieved\n[ 5 ] Cancelled\n[ 6 ] Scheduling\n[ 9 ] All")
         print("")
-        print(f"{status_num_to_word(chosen_status)} Orders")       
-        print("")    
+        print(f"Order Status : {status_num_to_word(chosen_status)} Orders [ {chosen_status} ]")       
         fm.print_dashes()
+        print("\nOrder Number & Customer         Customer Address         Order Cost     Current Status")
+        print(f"{fm.print_dashes(amount_of_dashes=10, return_it=True)}          {fm.print_dashes(amount_of_dashes=8, return_it=True)}       {fm.print_dashes(amount_of_dashes=4, return_it=True)}     {fm.print_dashes(amount_of_dashes=4, return_it=True)}")
+
         for order_info in result:
             display1 = f"#{order_info[2]} - {order_info[0]}"
-            display2 = f"{order_info[3]}"
+            display2 = f"{make_address_readable(order_info[4])}"
             display3 = f"{order_info[1]}"
-            spaces1 = create_spaces(display1, 29)
-            spaces2 = create_spaces(display2, 18)
-            spaces3 = create_spaces(display3, 17)
-            print(f"{order_info[2]} - {order_info[0]} {spaces1} {order_info[3]} {spaces2} £{order_info[1]} {spaces3}")
+            spaces1 = create_spaces(display1, 31)
+            spaces2 = create_spaces(display2, 20)
+            spaces3 = create_spaces(display3, 12)
+            print(f"{order_info[2]} - {order_info[0]} {spaces1} -> {make_address_readable(order_info[4])} {spaces2} £{order_info[1]} {spaces3} {order_info[3]}")
 
         if len(result) <= max_length_of_all_couriers_orders - 1:
             the_diff_to_add_lines = (max_length_of_all_couriers_orders - len(result))
@@ -959,10 +950,18 @@ def create_new_order(disp_size, rows):
     # MAKE THE ORDER
     Orders(name, customer_address, phone_number, order_status, order_cost, None, attached_courier, order_prdcts)
     ord_uwuid = Orders.orders_list[-1].order_id
-    print(f"Order ID (for your records) : {ord_uwuid}") #else use get attr
     # some kinda confirm before adding it to the db - like try except for the class init method or sumnt maybe idk?
     add_new_order_to_db(name, customer_address, phone_number, order_status, order_cost, ord_uwuid, attached_courier, order_prdcts)
-    print("This Was A Triumph! - Order Made")
+    fm.format_display(disp_size)
+    
+    print(f"{Fore.GREEN}This Was A Triumph! - Order Made")
+    fm.print_dashes()
+    print(f"ORDER CONFIRMED")
+    fm.print_dashes()
+    print(f"Order ID (for your records) : {ord_uwuid}") #else use get attr
+    fm.print_dashes()
+    print(f"You've Successfully Been Charged {Fore.GREEN}£{order_cost}")
+    fm.print_dashes()
     fm.fake_input()
     return(True) # if made new (true - order made succesfully)
 
@@ -1070,9 +1069,7 @@ def get_couriers_from_list_and_attach(disp_size, rows, name=None, phone_number=N
         return(user_input) #is an int
    
 
-def get_and_add_products(disp_size, rows):
-    basket_total = 0.0 
-    order_basket = [] 
+def get_and_add_products(disp_size, rows, basket_total:float = 0.0, order_basket:list = []):
     got_more = True
     while got_more:
         prdct.Product.paginated_print(prdct.Product, disp_size, rows, "Enter Page (step with .), To Select A Product First Hit '0' : ","Choose A Product To Add To The Order")
@@ -1113,7 +1110,7 @@ def get_and_add_products(disp_size, rows):
                 # commit confirm
                 fm.print_dashes()
                 yesno = fm.get_user_yes_true_or_no_false(before_text=f"Want To Add More Items\n{fm.print_dashes(return_it=True)}\n", yes="Order More",no="I'm Done - Start Checkout")
-                fm.fake_input()
+                fm.fake_input() # DELETE THIS RIGHT?!?!?!!?
                 if yesno == False:
                     got_more = False
                     break
@@ -1144,19 +1141,58 @@ def get_and_add_products(disp_size, rows):
     for product in order_basket:
         new_basket_total += product[2]
     basket_total = new_basket_total
-    #print(f"The Item Numbers Being Sent Are = {final_products_quants_list}")   
-    print(f"£{basket_total:.2f}")
-    fm.print_dashes()
-    #
-    #
-    #
-    # IF BASKET < 10, ADD 3.99 DELIVERY CHARGE, CONFIRM WITH USER (can skip confirm and just tell them tbf)
-    #
-    #
-    #
-    print("COMMIT CONFIRM?")
-    fm.fake_input()
-    return(final_products_quants_list, basket_total) 
+    #print(f"The Item Numbers Being Sent Are = {final_products_quants_list}")
+    if basket_total >= 12.99:    
+        print(f"£{basket_total:.2f}")
+        fm.print_dashes()
+        print("COMMIT CONFIRM?")
+        fm.fake_input()
+        return(final_products_quants_list, basket_total) 
+    else:
+        print("Your Basket Is Under £12.99")
+        fm.print_dashes()
+        print(f"£{basket_total:.2f}")
+        fm.print_dashes()
+        print("So We're Adding A £2.99 Delivery Charge")
+        fm.print_dashes()
+        print(f"[ 1 ] Accept\n[ 2 ] Cancel\n[ 3 ] Order More\n{fm.print_dashes(return_it=True)}")  #(loop back to readd would be nice but urgh - maybe back out then back in but wouldnt save ur orders but meh)
+        y_n_or_more = input("Enter Your Selection : ")
+        
+        if y_n_or_more == "1": # ACCEPT
+            fm.format_display(disp_size)
+            fm.print_dashes()
+            print("Delivery Charge Added")
+            print("Basket Updated")
+            fm.print_dashes()
+            basket_total += 2.99
+            print("")
+            fm.print_dashes()
+            print(f"{Fore.GREEN}£{basket_total:.2f}")
+            fm.print_dashes()
+            print("")
+            print("\(‾▿‾\) (/‾▿‾)/")
+            print("")
+            #print("Your Order Has Been Confirmed")
+            print(final_products_quants_list)
+            fm.fake_input()
+            return(final_products_quants_list, basket_total)  # THE ACTUAL FUCK THO, MAYBE JUST RETURN ONE TUPLE OR LIST AND UNPACK THE VALUES THEN BUT IT WAS WORKING BEFORE SO WTF MAN!!!! AND IT FUCKING WORKS WITH ONE WHAT THE FUCKKKKKKKK
+        elif y_n_or_more == "2": # CANCEL
+            fm.print_dashes()
+            print("Sorry It Had To End Like This")
+            print("")
+            print("(・_・;)")
+            print("")
+            fm.print_dashes()
+            fm.fake_input()
+            return("0", "0") 
+        else: # ORDER MORE - so loop back
+            get_and_add_products(disp_size, rows, basket_total) 
+        # aite so believe this will work just sending them back here to the same function
+        # but that isn't going to save your basket or the cost of your basket
+        # but since we initialise those vars at the start defo is a work around
+    
+
+        
    
 
 def product_basket(item_num_to_add:int, item_name_to_add:str, item_price_to_add:float, how_many:int, basket_list=None):
@@ -1233,11 +1269,11 @@ def add_order_status(the_code = None):
 ## MAIN MENU ############################################################################################################################################################
 
 
-def main_orders(): #rows=3, disp_size=22
-    disp_size = 20
-    rows = 3
+def main_orders(rows=3, disp_size=22):
+    #disp_size = 20
+    #rows = 3
     add_spaces = lambda x : x # take each line and add spaces appropriately should be easy might need full def tho
-    menu_string = [f"ORDERS v3.01\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n","[ 1 ] Create New", "[ 2 ] Print Orders List [DB, Paginated, Only Valid]", "[ 3 ] Print Orders By Courier [DB, Paginated, Inc None]", "[ 4 ] Search Orders By Courier [DB, Paginated, Only Valid]", "[ - ] -", "[ 6 ] IN PROG Search Orders By Status", "[ - ] -", "[ - ] -", "[ - ] -", "[ S ] -", "[ L ] -", "[ 0 ] Main Menu\n","- - - - - - - - - - -"]
+    menu_string = [f"ORDERS v3.01\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n","[ 1 ] Create New", "[ 2 ] Print SubMenu", "[ 3 ] Format Display", "[ - ] -", "[ - ] -", "[ - ] -", "[ - ] -", "[ - ] -", "[ - ] -", "[ S ] -", "[ L ] -", "[ 0 ] Main Menu\n","- - - - - - - - - - -"]
     user_menu_input = 1
     print_again = True
     while user_menu_input != "0":
@@ -1246,7 +1282,6 @@ def main_orders(): #rows=3, disp_size=22
             fm.format_display(disp_size)
             print(*menu_string, sep="\n")
             user_menu_input = input("Enter Menu Selection : ")
-
 
     # [1] CREATE NEW ORDER
         if user_menu_input == "1":
@@ -1259,24 +1294,70 @@ def main_orders(): #rows=3, disp_size=22
                     user_menu_input = "1"
                 else:
                     print_again = True
-
+                
+    # [2] PRINT SUBMENU
         if user_menu_input == "2":
+            print("Print SubMenu")
+            print_sub_menu(disp_size, rows)
+
+     # [3] FORMAT SCREEEN
+        elif user_menu_input == "3":
+            disp_size = format_screen(disp_size)
+            fm.fake_input()
+    
+    return(rows, disp_size)
+
+
+def print_sub_menu(disp_size, rows):
+    menu_string = [f"ORDERS v3.01\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n","[ 1 ] Print Orders List [DB, Paginated, Only Valid]", "[ 2 ] Print Orders By Courier [DB, Paginated, Inc None]", "[ 3 ] Search Orders By Courier [DB, Paginated, Only Valid]", "[ 4 ] Search Orders By Status [DB, Only Valid]", "[ 0 ] Back To Orders Menu\n","- - - - - - - - - - -"]
+    user_menu_input = 1
+    while user_menu_input != "0":
+        fm.format_display(disp_size)
+        print(*menu_string, sep="\n")
+        user_menu_input = input("Enter Menu Selection : ")
+            
+        if user_menu_input == "1": # changed from if to elif, shouldnt cause problems, but commenting just incase
             db_print_orders(disp_size, rows)
             fm.fake_input()
 
-        if user_menu_input == "3":
+        elif user_menu_input == "2":
             db_print_orders_for_every_courier(disp_size, rows)
 
-        if user_menu_input == "4":
-            #db_print_courier_for_search(disp_size, rows)
-            db_join_by_chosen_courier_then_status(disp_size, rows)
+        elif user_menu_input == "3":
+            db_join_by_chosen_courier_then_status(disp_size, rows) #db_print_courier_for_search(disp_size, rows)
 
-        if user_menu_input == "6":
-            db_print_search_by_status(disp_size, rows)
-            #db_join_by_chosen_courier(disp_size, rows)
-    
-        if user_menu_input == "7":
-            db_join_by_courier_only_live_orders()
+        elif user_menu_input == "4":
+            db_print_search_by_status(disp_size, rows) #db_join_by_chosen_courier(disp_size, rows)
+
+
+def format_screen(disp_size:int): 
+    user_submenu_input = "1"
+    while user_submenu_input != "0":
+        hl_curr_disp = lambda x : f"{x}" if x != disp_size else f"{Fore.GREEN}{x} << CURRENT DISPLAY SIZE"
+        print(*[hl_curr_disp(x+9) for x in reversed(range(45))], sep="\n")
+        print(f"Current Display Size = {disp_size} < ENSURE THESE MATCH!  -> Tip! use 0 to reset the display)") 
+        print("Recommended Display Size = 29+")
+        print("Recommended Minimum Display Size = 16") ## 16 gets 30 items comfortably (per line) without overlap or need for pagination so start here (15 had mad overlap)
+        fm.print_dashes()
+        print("Adjust The Display Then Enter [ 0 ] To Reset The Display Counter To See The Numbers")
+        print("The Very Top Number Will Be Your Display Size")
+        fm.print_dashes()
+        new_disp_size = int(input("Enter The Number For The Screen Size You Want : "))
+        if new_disp_size > 0: # should make this be greater than the acceptable size but whatever
+            print(f"New Screen Size = {new_disp_size}")
+            return(new_disp_size)
+
+        else:
+            user_submenu_input = "1"
+
+def set_display_rows(rows: int):
+    # to improve that just make the amount of spaces dynamic and trim the end of long strings to fit uniformly
+    # N0TE! - should trim the end of long strings anyway btw!
+    fm.format_display()
+    print("Choose How Many Columns To Display In Menus (1 - 3)")
+    print(f"Max Columns = 3, Recommended Columns = 3, Current = {rows})") # used to be 5 until price etc so updating for those changes tho no really tested, hardly worth it
+    rows = int(input("Enter A Number Between 1 and 3 : "))
+    return(rows)
 
 
 # can also use this for excepts/errors tbf lol
