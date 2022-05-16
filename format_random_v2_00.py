@@ -1,6 +1,6 @@
 import random # for random numbers
 import os # for system access (file names)
-import keyboard # for direct keyboard input access
+#import keyboard # for direct keyboard input access
 import time # for pausing
 
 
@@ -314,13 +314,10 @@ def sing_til_input():
             for line in the_song:
                 print(line)
                 time.sleep(0.5)   
-                if keyboard.is_pressed('q'):  # if key 'q' is pressed 
-                    print("")
-                    print('My Singing That Bad Huh?') # print('My Singing That Bad Huh? ',i) i gives number you quit on
-                    break  # finishing the loop
-                else:
-                    time.sleep(0.5)
-                    i+=1
+                #if keyboard.is_pressed('q'):  # if key 'q' is pressed 
+                print("")
+                print('My Singing That Bad Huh?') # print('My Singing That Bad Huh? ',i) i gives number you quit on
+                break  # finishing the loop
             else:
                 break
             break
@@ -333,7 +330,21 @@ def sing_til_input():
     print_dashes()
     print("")
 
+
+def get_user_yes_true_or_no_false(before_text:str = "", after_text:str = "", yes:str = "Yes", no:str = "No"):
+    # needs try except validation probably as tho this should cover some cases it won't cover all/enough?
+    print(f"{before_text}\n[ 1 ] = {yes}\n[ 2 ] = {no}\n{after_text}")
+    print_dashes()
+    user_input = input("Your Selection : ".upper())
+    if user_input == "1":
+        return(True)
+    else:
+        return(False)
+
+
+
+
+
         
 #for module_name in dir():
 #    print(module_name)
-

@@ -1,11 +1,9 @@
-#from numpy import full
 import format_random_v2_00 as fm
 import csv
 import re
 import random
-#import time as t
+import csv
 
-## LAST STABLE STORAGE VERSION v1.05
 
 # CLASSES ########################################
 
@@ -13,42 +11,62 @@ import random
 
 class Product:
     products_list = [] # list of all instances of each product, is this owned (as in stored) by every object of the class? (as it could get huge tho right)
+    product_id_cache = []
 
 # OBJECT (PRODUCT) METHODS ########################################
 
 # INIT / CREATE NEW ########################################
-    def __init__(self, name:str, price_gbp:float, quantity:int, product_number:str = None): # if you want vars to be unique for each instance/object of a class, put them in init, if putting them above init changing the var will change it for ALL instances of the class
+    def __init__(self, name:str, price_gbp:float, quantity:int, product_number:int = None): # if you want vars to be unique for each instance/object of a class, put them in init, if putting them above init changing the var will change it for ALL instances of the class
         # initialising the variables for each object
-        if product_number != None:
-            self.name, self.price_gbp, self.quantity, self.product_number = name, price_gbp, quantity, product_number
-            self.products_list.append(self)
-            print(f"#{self.product_number} {self.name} £{self.price_gbp} ({self.quantity}) Loaded")
-        else:
-            self.name = name
-            self.price_gbp = price_gbp
-            self.quantity = quantity
-            def generate_initial_product_numbers():
-                # to store 1000 comfortably, 10,000 total size. (w/ pagination now stores 10,000 comfortably, 100,000 total size - in regards to terminal display)
-                p_len = lambda x : 5 - len(str(len(self.products_list)+1))
-                get_zeros = lambda : "0" * p_len(len(self.products_list)+1)
-                return(get_zeros())
-            # complete the product number with the inital zeros and then the current product number (leng of the list = 1 since not yet initialised the object)
-            if len(self.products_list) == 0: # if zero size list (so first time)
-                self.product_number = generate_initial_product_numbers() + str(len(self.products_list) + 1)
+
+        def get_valid_product_id():
+            """ if the id you want to use is in the couriers_id_cache then create a new one """
+            current_value = int(max(self.product_id_cache)) + 1 # plus one to the largest number in the id cache gives you the most valid number for the id (will not duplicate)      
+            missing_elements = [ele for ele in range(max(self.product_id_cache)+1) if ele not in self.product_id_cache and ele != 0] # get the missing elements in the list and store in in a new (temp) list
+
+            if missing_elements: # has items (so there are valid missing numbers we could use for IDs)
+                self.product_number = missing_elements[0] # use the first (lowest numbered) item in that list (of missing elements)
+            else: 
+                self.product_number = current_value # if no missing elements then just the "highest" + 1
+
+            self.product_id_cache.append(int(self.product_number)) # append the id to our cache, having cache means no duplicates, no duplicates means search by id number is plausible
+            #END IF
+        #END NESTED FUNCTION
+
+        # varaibles, set regardless of load or create (so all except id/numb)
+        self.name, self.price_gbp, self.quantity = name, price_gbp, quantity
+        
+        # for differences between loading existing and creating new
+        if product_number: # if id/numb has a value, this means you have existing data to use when creating this new object
+
+            self.product_number = int(product_number) # FUCKING BASTARD LINE, so what was happening was, when the self had no value and was being given the prod number value it was being given a string and that was causing hella issues
+
+            if self.product_number in self.product_id_cache:
+                # if there is a ID clash then update the id
+                print(f"[ Potential ID Clash ({self.product_number}) Averted ]")
+                get_valid_product_id()
             else:
-                #temp_list = []
-                #for z, _ in enumerate(self.products_list):
-                #    temp_list.append(max(self.products_list[z].product_number))
-                #print(max(temp_list))
-                self.product_number = generate_initial_product_numbers() + str(self.products_list.index(self.products_list[-1]) + 2) #print(f"The last number was? : {self.products_list.index(self.products_list[-1])}, type {type(self.products_list.index(self.products_list[-1]))}")
-                # FYI i do think this actually does solve the product numbers issue, regardless of deletes, as long as it stays running right... duh?
+                self.product_number = product_number
+                self.product_id_cache.append(int(self.product_number))
+            self.products_list.append(self)
+            print(f"#{self.product_number} {self.name} ({self.quantity}) - £{self.price_gbp} Loaded") # TO ADD A BOOL PARAM FOR SHOWING THIS PRINT STATEMENT?
+        else:
+            # you are creating from scratch, so you need a new, dynamically created product_number/id
+            if self.product_id_cache: # has items
+                get_valid_product_id()
+            else:
+                # if the cache has no items then its the first ite, so if its a brand new courier their number will be one (ooooo lucky you huh)
+                self.product_number = 1
+                self.product_id_cache.append(int(self.product_number))
             # append it to the "global" list and print back confirmation
             self.products_list.append(self)
-            print(f"#{self.product_number} - {self.name} £{self.price_gbp} Stored With {self.quantity} Items")       
-    # END __INIT__  
+            print(f"#{self.product_number} {self.name} ({self.quantity}) - £{self.price_gbp} Created") # TO ADD A BOOL PARAM FOR SHOWING THIS PRINT STATEMENT?  
+        #END IF
+        #print(Product.product_id_cache)
+    #END INIT
+
 
 # PRINT PRODUCTS METHODS ######################################## 
-
 
 # v7 print - pagination by price to do eventually cba rn
     def paginated_print_by_price(self, disp_size: int=22, rows: int=4):
@@ -75,7 +93,7 @@ class Product:
 
 
     # v6 print - pagination
-    def paginated_print(self, disp_size: int=22, rows: int=4):
+    def paginated_print(self, disp_size: int=22, rows: int=3, disp_str = "Enter Page Number (or use . to step forward +1 page) : ", title_str=None): #just changed rows default arg from 4 to 3 btw
         try:
             user_wants_page = 1 # initialises the loop
             # whole method is this loop, obvs not ideal 
@@ -93,7 +111,11 @@ class Product:
                 last_page = [] # the single list with indexes of the last page (basically display_to_use but the end of it)
                 # top printout
                 fm.format_display(disp_size)
-                print(f"Sexy AF Pagniation - Dynamic Page Size\nCurrently {ipp} Items Per Page, {len(self.products_list)} Total Products\n{fm.print_dashes(return_it=True)}\n") # note the reason to point out uses index notation is for deleting and displaying etc this is best, thats just what indexing is for, but product numbers is more like a unique identifier that isn't the name incase it was required which im sure there are irl cases for
+                if title_str is None:
+                    print(f"Sexy AF Pagniation - Dynamic Page Size") 
+                else:
+                    print(f"{title_str}")
+                print(f"Currently {ipp} Items Per Page, {len(self.products_list)} Total Products\n{fm.print_dashes(return_it=True)}") # note the reason to point out uses index notation is for deleting and displaying etc this is best, thats just what indexing is for, but product numbers is more like a unique identifier that isn't the name incase it was required which im sure there are irl cases for
                 print(f"[Index] Product (quantity) - £Price\n")
                 
                 if remaining_items != 0: #print(f"usable_screen={usable_screen}\n,ipl={ipl}\n,ipp={ipp}\n,full_pages={full_pages}\n,remaining_items={remaining_items}\n,")
@@ -149,11 +171,23 @@ class Product:
                 # cpage = lambda x : x - 1)*60 ???
                 # [(cpage(a)),(cpage(b)),(cpage(c)),(cpage(d)),(cpage(e)) for ] ??? whatever... returning lists for a,b,c... (1,)
                 # filling in the above for loop with the data you want
+                
+                def is_sold_out(the_product):
+                    if int(the_product) <= 0:
+                        return("GONE")
+                    else:
+                        return(the_product)
+
                 for the_line in the_page: 
                     print_string = ""
                     for prdct in the_line:
                         prdct + current_page_number
-                        current_string = (f"{prdct} {self.products_list[prdct].name} {self.products_list[prdct].price_gbp} {self.products_list[prdct].quantity} ")
+                        
+
+                        #
+                        # IF ITS QUANT IS ZERO THEN USE A DIFF TING HERE!!
+                        #
+                        current_string = (f"{prdct} {self.products_list[prdct].name} {self.products_list[prdct].price_gbp} {is_sold_out(self.products_list[prdct].quantity)} ")
                         spaces = 48 - (len(current_string))
                         spaces_string = ""
                         if int(prdct) + 1 == 10: # adjust for the extra character in the display by minusing one from the spaces on the end
@@ -168,7 +202,7 @@ class Product:
                             spaces -= 1
                         for x in range(spaces - 5):
                             spaces_string += " "
-                        print_string += (f"[ {int(prdct) + 1} ] {self.products_list[prdct].name} {spaces_string} ({self.products_list[prdct].quantity}) - £{self.products_list[prdct].price_gbp}       ")
+                        print_string += (f"[ {int(prdct) + 1} ] {self.products_list[prdct].name} {spaces_string} ({is_sold_out(self.products_list[prdct].quantity)}) - £{self.products_list[prdct].price_gbp}       ")
                     print(print_string)
                     # yield back as tuples with index value, check as recieving yield, if index value not in the indexes that would be in the current page (0-59,60-119...)
                 cpage = int((current_page_number + ipp) / ipp)
@@ -176,14 +210,20 @@ class Product:
                 def return_one_line_art():
                     one_line_ascii_art_list = ["̿' ̿'\̵͇̿̿\з=(◕_◕)=ε/̵͇̿̿/'̿'̿ ̿  NOBODY MOVE!","( ͡° ͜ʖ ͡°) *staring intensifies*","(╯°□°)--︻╦╤─ - - - WATCH OUT HE'S GOT A GUN","(⌐■_■)--︻╦╤─ - - - GET DOWN MR PRESIDENT","┻━┻︵  \(°□°)/ ︵ ┻━┻ FLIPPIN DEM TABLES","(ノಠ益ಠ)ノ彡︵ ┻━┻︵ ┻━┻ NO TABLE IS SAFE","ʕつಠᴥಠʔつ ︵ ┻━┻ HIDE YO KIDS HIDE YO TABLES","(ಠ_ಠ)┌∩┐ BYE BISH","(ง •̀_•́)ง FIGHT ME FOKER!","[¬º-°]¬  [¬º-°]¬ ZOMBIES RUN!","(╭ರ_•́) CURIOUSER AND CURIOUSER","つ ◕_◕ ༽つ つ ◕_◕ ༽つ TAKE MY ENERGY","༼つಠ益ಠ༽つ ─=≡ΣO)) HADOUKEN!"]
                     return(one_line_ascii_art_list[random.randint(0, len(one_line_ascii_art_list)-1)])
-                # END IN LINE FUNCTION that i should totally move 
+                # END NESTED FUNCTION that i should totally move 
                 if cpage > len(pages_as_numbers_listed) : print(return_one_line_art()) ############### ascii art, could do if max go back to one but prefer the easter egg
                 print("\n", end="PAGES ")
                 #pages_print.insert(0,"PAGE NUMBERS :")
                 highlight_page = lambda h : f"[[ {h} ]]" if h == cpage else f"[ {h} ]" # language is so mad wtf            
                 print(*[highlight_page(p) for p in pages_as_numbers_listed])
                 #print("^ page numbers ^")
-                user_wants_page = input("\nEnter Page Number (or use . to step forward +1 page) : ")
+                #
+                #
+                # UPDATING
+                # user_wants_page = input("\nEnter Page Number (or use . to step forward +1 page) : ")
+                #
+                #
+                user_wants_page = input(f"\n{disp_str}")
                 if user_wants_page == "0":
                     break
                 elif user_wants_page == ".":
@@ -316,10 +356,32 @@ class Product:
         f.close()
         for amount in range(len(list_copier)):
             x = list_copier[amount].split(",")
+            #print(f"0 = {x[0]}, type={type(x[1])}")
+            #print(f"1 = {x[1]}, type={type(x[1])}")
+            #print(f"2 = {x[2]}, type={type(x[1])}")
+            #print(f"3 = {x[3]}, type={type(x[1])}")
             Product(x[1], x[2], x[3], x[0]) #print(f"{x} <- x")
         print("Loaded Successfully") # actually 100% is not true, would need to do properly just want some feedback from the function for now
         if init_load == False:
             fm.fake_input()
+
+    def load_products_via_csv():
+        templist = []
+        # open csv and read as string
+        with open("x_main_products_list.csv", "r") as file:
+            reader = csv.reader(file, delimiter=",")
+            for row in file:
+                templist.append(row.strip())
+                print(f"{row} LOADED SUCCESSFULLY")
+        fm.format_display()
+        templist.pop(0) # pops the header off the temp list
+        #Product.products_list = templist
+        try:
+            for index in range(len(templist)):
+                x = templist[index].split(",")
+                Product(x[1], float(x[2]), int(x[3]), int(x[0]))
+        except IndexError:
+            fm.print_dashes()    
 
 # RANDOM PRODUCT METHODS #########################################
 
@@ -355,7 +417,7 @@ def main_menu(rows=3, disp_size=22):
             # PRINT THE MENU  
             fm.format_display(disp_size)
             print(f"PRODUCTS v1.02\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n")
-            menu_string = ["[ 1 ] Create New", "[ 2 ] Select & Delete (alpha)", "[ 3 ] Print Sub Menu", "[ 4 ] Update Product Name", "[ 5 ] Sexy Pagniation", "[ - ] -", "[ - ] -", "[ S ] Settings Sub Menu", "[ L ] Load Products To Classes (alpha)", "[ 0 ] Main Menu\n","- - - - - - - - - - -"]
+            menu_string = ["[ 1 ] Create New", "[ 2 ] Select & Delete (alpha)", "[ 3 ] Print Sub Menu", "[ 4 ] Update Product Name", "[ 5 ] Sexy Pagniation", "[ 6 ] Update Attributes (alpha af)", "[ - ] -", "[ S ] Settings Sub Menu", "[ L ] Load Products To Classes (alpha)", "[ 0 ] Main Menu\n","- - - - - - - - - - -"]
             print(*menu_string, sep="\n")
             # GET THE USERS INPUT
             user_menu_input = input("Enter Menu Selection : ")
@@ -363,7 +425,6 @@ def main_menu(rows=3, disp_size=22):
         # [1] CREATE NEW PRODUCT
         if user_menu_input == "1":
             create_new_product(disp_size) # return values are for quick menu / add again loop
-            
             # QUICK MENU / CREATE AGAIN
             print("Quick Create Another Product?\n")
             if get_user_yes_true_or_no_false():
@@ -445,7 +506,8 @@ def main_menu(rows=3, disp_size=22):
 
         # [L] L - LOAD (HIDDEN)
         elif user_menu_input == "L" or user_menu_input == "l":
-            Product.load_list_from_file(False)
+            Product.load_products_via_csv()
+            #Product.load_list_from_file(False)
 
         # [0] QUIT THE MENU / LOOP
         elif user_menu_input == "0":
@@ -477,6 +539,11 @@ def settings_submenu(disp_size, rows):
         print(*menu_string, sep="\n")
         # GET THE USERS INPUT
         user_submenu_input = input("Enter Your Input : ")
+        # VALIDATE NATURAL LANGUAGE (NEW! - ALPHA)
+        if grab_natural_lang(user_submenu_input) == False:
+            print("do valid thing")
+            fm.fake_input()
+            break
 
     # [1] QUICK ADD DEFAULT PRODUCTS
         if user_submenu_input == "1":
@@ -502,7 +569,8 @@ def settings_submenu(disp_size, rows):
 
     # [5] LOAD FROM FILE
         elif user_submenu_input == "5":
-            Product.load_list_from_file(False)
+            Product.load_products_via_csv()
+            #Product.load_list_from_file(False)
 
     # [0] BACK / RETURN TO MAIN MENU
         elif user_submenu_input == "0":
@@ -600,20 +668,25 @@ def create_new_product(disp_size):
     # CREATE NEW INSTANCE OF PRODUCT WITH USER GIVEN NAME (runs print confirms to user, etc)
     Product(name, price_in_pounds, quantity)
     # FOR PRINTING BACK 0s TO THE USER, USES THE LEN OF THE STR OF THE LEN OG PRODUCT NUMBERS AND USES IT AS AN INDEX TO SLICE FROM THE END OF THE STRING
-    trim_by = lambda x : 4 - len(str(len(x)))
-    print(f"Product #{str(Product.get_last_product_number(Product)[trim_by(Product.products_list):])} Added Sucessfully")
+    get_zeros = lambda x : "0"*(4 - len(str(x)))
+    print(f"Product #{get_zeros(Product.get_last_product_number(Product))}{Product.get_last_product_number(Product)} Added Sucessfully")
+    #################
+    # UPDATED AS ZEROS REMOVED
+    # trim_by = lambda x : 4 - len(str(len(x)))
+    # print(f"Product #{str(Product.get_last_product_number(Product)[trim_by(Product.products_list):])} Added Sucessfully")
+    #################
     fm.print_dashes()
 
 # both so validation, both so reusable
 # get quantity
 # get name
     
-def get_price(to_display = Product.count_products_list(Product) + 1):
+def get_price():
     the_price = "1"
     while the_price != "0":
         #print("Please Use This Format - £12 or £12.9 or £12.90") - got it working with "12." (which is treated as 12.0) so removed
         fm.print_dashes()
-        price_in_pounds = input(f"Enter The Price (In GBP - e.g 12.99) For Product {to_display} : £")
+        price_in_pounds = input(f"Enter The Price (In GBP - e.g 12.99) For Product {Product.count_products_list(Product) + 1} : £")
         price_is_good = (re.match(r'\d+(?:\.\d{0,2})?$', price_in_pounds))
         #print(f"price is good? {price_is_good}")
         if price_is_good :
@@ -626,8 +699,91 @@ def get_price(to_display = Product.count_products_list(Product) + 1):
             print("Wrong Format - Please Try Again")
     # END WHILE
     x = float(price_in_pounds)
-    print(f"Returning {x}{type(x)}")
+    #print(f"Returning {x}{type(x)}")
     return(float(price_in_pounds))
+
+
+
+## NEW TEST SHIT 
+## imo is overcomplicated, just search for the delimiter and then validate if the attached word has an action...
+
+def action_logger(action:str, is_done:bool):
+    #just have them relate to ints in a simple switch?
+    actions_list = []
+    if is_done == False:
+        print("logged {}")
+        actions_list.append(action)
+    else:
+        fm.fake_input()
+        print('finalise the actions and route') #its own function!
+
+
+def grab_natural_lang(input_string:str):
+    action_counter = 0
+
+    if is_natural_rows(input_string): # or natural language x or ....
+        action_logger("rows", False)
+        action_counter += 1 
+
+    if action_counter != 0:    
+        valid_natural_lang_input = True
+    else:
+        valid_natural_lang_input = False
+
+    if valid_natural_lang_input:
+        print("take the actions list and go places!")
+        fm.fake_input()
+        return(False)
+    else:
+        return(input_string) 
+        # because there was no triggered input you can just return the string to do what it was doing...
+        # you do this check on the string before a big menu input, if it validates, you skip the menu entirely!!!!!!
+
+def is_natural_rows(input_string:str):
+    if "rows" in input_string or "row" in input_string or "rw" in input_string or "rws" in input_string:
+        try: 
+            x = input_string.split()
+            da_int = int(x[1])
+            if da_int >= 4:
+                print("sorry thats too problematic")
+                fm.fake_input()
+            else:
+                print(da_int)
+                return da_int
+                fm.fake_input()
+        except(ValueError):
+            print("where int?")
+            fm.fake_input()
+            return False
+        except(IndexError):
+            print("where int tho?")
+            fm.fake_input()
+            return False
+        return True # ?! will go from "sorry..."?
+    else:
+        return False # or true obvs depending on if answers question
+
+#to achieve this do sequentially, check for X,
+#                                 if find X check for its modifier, 
+#                                                     if no modifier, if is still valid,
+#                                                                                     do thing, 
+#                                                                                 else,
+#                                                                                     break fully
+#                                                    if modifier
+#                                                           check if modifier is valid (i.e. 20 for rows lol), 
+#                                                                   if valid,
+#                                                                        log it
+#                                                                   if not valid (display and try again or just break (which just redisplays the current menu so yeah!))
+# 
+#   then once end
+#           unpack the actions and route in proper order, any settings actions then user actions then print actions
+#   then complete them
+#   then display it to the user (using natty lang v0.1) 
+#
+# (will have a list unpacker that puts them into the appropriate order at the end then executes just log for now duh)
+#                                            
+
+
 
 ## GENERAL FUNCTIONS #######################################################################################################################################################
 
@@ -697,7 +853,8 @@ def set_display_rows(rows: int):
 # should set display on start?
 
 def driver():
-    Product.load_list_from_file(True)
+    Product.load_products_via_csv()
+    #Product.load_list_from_file(True)
     main_menu()
 
 
@@ -708,3 +865,34 @@ if __name__ == "__main__":
 #
 # DEFO DEFO do want quantity and price in gbp (as price will be interesting way to use stuff like map) (and then possibly type as cool for sorting)
 # - could make something like special offer like this too right? special offer has multiple products etc
+
+# make it a class? give it states (based on where it is and what is valid) (even privileges)
+
+## OLD INIT CODE SAVING FOR NOW JUUUUUST INCASE - can del after testing 
+
+'''
+        if product_number != None:
+            self.name, self.price_gbp, self.quantity, self.product_number = name, price_gbp, quantity, product_number
+            self.products_list.append(self)
+            print(f"#{self.product_number} {self.name} £{self.price_gbp} ({self.quantity}) Loaded")
+        else:
+            self.name = name
+            self.price_gbp = price_gbp
+            self.quantity = quantity
+            def generate_initial_product_numbers():
+                # to store 1000 comfortably, 10,000 total size. (w/ pagination now stores 10,000 comfortably, 100,000 total size - in regards to terminal display)
+                p_len = lambda x : 5 - len(str(len(self.products_list)+1))
+                get_zeros = lambda : "0" * p_len(len(self.products_list)+1)
+                return(get_zeros())
+            # complete the product number with the inital zeros and then the current product number (leng of the list = 1 since not yet initialised the object)
+            if len(self.products_list) == 0: # if zero size list (so first time)
+                self.product_number = generate_initial_product_numbers() + str(len(self.products_list) + 1)
+            else:
+       
+                self.product_number = generate_initial_product_numbers() + str(self.products_list.index(self.products_list[-1]) + 2) 
+                #
+            self.products_list.append(self)
+            print(f"#{self.product_number} - {self.name} £{self.price_gbp} Stored With {self.quantity} Items")       
+    # END __INIT__  
+
+'''

@@ -1,7 +1,53 @@
 import format_random_v2_00 as fm
 import re # from re import match - why doesnt this work wtf?
 import random
-#import csv
+import pickle
+import csv
+
+import pymysql
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+host = os.environ.get("mysql_host")
+user = os.environ.get("mysql_user")
+password = os.environ.get("mysql_pass")
+database = os.environ.get("mysql_db")
+
+# Establish a database connection
+connection = pymysql.connect(
+    host,
+    user,
+    password,
+    database
+)
+
+def get_from_db(command):
+    cursor = connection.cursor()
+    cursor.execute(f"{command}") 
+    myresult = cursor.fetchall()
+    #.commit()
+    #cursor.close()
+    #connection.close()
+    return(myresult)
+
+def read_from_db():
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM couriers") 
+    myresult = cursor.fetchall()
+    for x in myresult:
+        print(x)
+    #connection.commit()
+    #cursor.close()
+    #connection.close()
+
+def add_to_db(command):
+    cursor = connection.cursor()
+    cursor.execute(f"{command}") 
+    connection.commit()
+    #cursor.close()
+    #connection.close()
 
 # CLASSES ########################################
 # COURIERS CLASS #################################
@@ -61,6 +107,14 @@ class Couriers:
         #END IF
     #END INIT    
 
+    # CSV CONSTRUCTOR
+    @classmethod
+    def csv_constructor(cls, name:str, phone_number:str, location:str, courier_id:int = None, availability:list = []):
+        # could strip them all here tbf (especially a to be sure and b because they probably do need it?)
+        # TEST BY, check print (shouldnt print if not in global list), then do cls.append here to see if that works, THEN and regardless, just use actually constructor in the load loop lmao!
+        return cls(name, phone_number, location, courier_id, availability)
+
+
 ## PRINT ################################
 
     # PRINT COURIERS - basic formatting, one line generator 
@@ -99,9 +153,189 @@ class Couriers:
         elif the_key == "location":
             new_value = get_location_from_list(disp_size)
         setattr(self.couriers_list[to_update-1], the_key, new_value)
+        print(f"UPDATE couriers SET {the_key} = '{new_value}' WHERE courier_db_id = {int(to_update-1)}")
+        add_to_db(f"UPDATE couriers SET {the_key} = '{new_value}' WHERE courier_db_id = {int(to_update)}")
+        
         print(f"{the_key} Updated To {new_value}")
 
+## SAVE LOAD ###############################
+    
+    ## PICKLES
+
+    def save_objs_via_pickle(self):
+        with open("x_main_couriers_pickle", "wb") as f:
+            pickle.dump(len(self.couriers_list), f)
+            for courier in self.couriers_list:
+                pickle.dump(courier, f)
+        # end context manager
+
+    def load_via_pickle():
+        data2 = []
+        with open("x_main_couriers_pickle", "rb") as f:
+            for _ in range(pickle.load(f)):
+                data2.append(pickle.load(f))
+        print(f"printing : {Couriers.couriers_list}")
+        fm.fake_input()
+        Couriers.couriers_list = data2
+        #print(Couriers.couriers_list)
+
+    ## CSVs
+
+    def save_all_products_as_csv(self, file_name:str = "x_main_couriers_list.csv"):
+        with open(file_name, "w", newline="") as csvfile:
+            # set the headers for the csv            
+            fieldnames = ["courier_id", "name", "phone_number", "location", "availability"] # name:str, phone_number:str, location:str, courier_id:int, availability:list
+            # instruct the writer to write the headers
+            #writer = csv.DictWriter(csvfile, delimiter=',')
+            writer = csv.DictWriter(csvfile, delimiter=',', fieldnames= fieldnames)
+            #writer.writeheader()
+            # instruct the writer to write the row
+            for i, _ in enumerate(self.couriers_list):
+                writer.writerow({"courier_id":self.couriers_list[i].courier_id, "name":self.couriers_list[i].name, "phone_number":self.couriers_list[i].phone_number, "location":self.couriers_list[i].location, "availability":self.couriers_list[i].availability})
+
+
+    def load_couriers_via_csv():
+        templist = []
+        # open csv and read as string
+        with open("x_main_couriers_list.csv", "r") as file:
+            reader = csv.reader(file, delimiter=",")
+            for row in file:
+                templist.append(row.strip())
+                print(f"{row} LOADED SUCCESSFULLY")
+        fm.format_display()
+        #templist.pop(0) # pops the header off the temp list
+        #Couriers.couriers_list = templist
+        for index in range(len(templist)):
+            x = templist[index].split(",")
+            Couriers.csv_constructor(x[1], x[2], x[3], int(x[0]), x[4]) ## DUH TO TEST THIS WORKS PUT THAT CONVERT TO INT IN THE CSV CONSTRUCTOR (or duhhhhh DO THE SPLIT LOOP THERE JUST TO TEST ANYWAYS AND GIVE IT THE WHOLE TEMP LIST (then do the return loop in there and its sick, THEN could convert it to a generator and THEN ill finally figure out how to use that pickle generator lol)
+
+
+    # HERES THE THING I DONT GET RIGHT...
+    # I CAN ACCESS THE DATA WHEN LOADING AS I LOAD TO A LIST IN CLASSES, SURE MAKES SENSE, ITS STRINGS, INTS, FLOATS, ETC STORED IN A LIST
+    # AND THO THEY WERE *CREATED* AS OBJECTS THEY STILL ARE JUST THAT DATA, SO I CAN STILL ACCESS THEM WITHOUT INSTANTIATING THEM
+    # I GET THAT, BUT... BECAUSE THEY *ARE* OBJECTS, DOES SIMPLY LOADING THEM INTO COURIERS LIST CREATE THEM AS OBJECTS?
+    # I OBVIOUSLY ASSUMED NOT, AS I HAVE RECREATED THE ACTUAL OBJECTS IN LOADS ALREADY IN OTHER MODULES AND VERSIONS
+    # BUT
+    # IF THIS WORKS, WHAT EVEN IS THE NEED FOR INSTANTIATING A CLASS IN THE FIRST PLACE? 
+    # (no direct access right?, and im assuming then that you cant access them via get attr or set attr if they havent been instantiated, despite the fact that it may seem as such because of the data that represents them being stored ahhhh)
+    # so its very much like saying, a bot goes over all ur media and messages when u die, 
+    # then they make a chat bot that seems to be just like you, knows alot of your intimate details and secrets, 
+    # practically unrecognisable, but its just ur data, its just a representation of information you had stored
+    # it is not *actually* you tho, again , just ur data...
+    # i mean ik that bit makes sense but have i got the rest right?
+
 ## END CLASS DECLARATIONS #####################################################################################################################################################
+
+# real quick tryna get this generator to return,
+# either by appending the load all through a loop AND/OR maybe through classmethod custom init method for creating the objects through generation
+
+
+####### PRINT - NEW - FROM ORDERS (ikr lol)
+
+def items_per_list_print_couriers(disp_size: int=22, rows = 3):
+    #ipl = rows #da fuck 
+    usable_screen = int(disp_size) - 10
+    ipl = usable_screen
+    i_list = []
+    # function
+    # creates the initial lists with just ints of the order
+    for g in range(ipl):
+            x = g # if needs to be plus 1 then do here and also in x < len(main_co_list) + 1
+            g_list = []
+            for i in range(int(len(Couriers.couriers_list)/ipl) + 1): # rows? needed (for X per line)
+                if x < len(Couriers.couriers_list):
+                    g_list.append(x)
+                x += ipl
+            i_list.append(g_list)
+            x += 1
+            # END FOR
+    # END FOR    
+    # filling in the above for loop with the data you want
+
+    for short_list in i_list: 
+        print_string = ""
+        for index in short_list:
+            current_string = (f"{index} {Couriers.couriers_list[index].name}")
+            spaces = 35 - (len(current_string))
+            spaces_string = ""
+            if int(index) + 1 == 10:
+                spaces -= 1
+            for x in range(spaces):
+                spaces_string += " "
+            cr = Couriers.couriers_list[index]    
+            print_string += (f"[ {int(index) + 1} ] {cr.name} - {cr.location} {spaces_string}")
+        print("")
+        fm.print_dashes()
+        print(print_string)
+
+
+# TEST DB PRINT ##########################################################################################################################################################
+
+
+def db_print_test(disp_size: int=22, rows = 3):
+    usable_screen = int(disp_size) - 10
+    ipl = usable_screen
+    length_of_couriers = get_from_db(f'SELECT * FROM couriers')
+    length_of_couriers = len(length_of_couriers)
+    total_pages = int(length_of_couriers / ipl)
+    if (length_of_couriers % ipl) != 0:
+        total_pages += 1
+    final_page = len(range(total_pages))
+    print(f"FINAL PAGE : {final_page}")
+    print(f"Total Pages = {total_pages}")
+    pages_display = [f"[ {x+1} ]" for x in range(total_pages)]
+    pages_display = " - ".join(pages_display)
+    fm.format_display(disp_size)
+    want_more_print = True
+    current_page = 1
+    dont_print = False
+    query = f'SELECT * FROM couriers LIMIT {ipl}'
+    print(f"display size = {disp_size}")
+    print(f"display size = {rows}")
+    while want_more_print: 
+        #query = query
+        result = get_from_db(query)
+        for courier in result:
+            x = f"{courier[0]} ] - {courier[1]} - {courier[3]} [0{courier[2]}"
+            current_str = len(x)
+            spaces = 55 - current_str
+            spaces_string = ""
+            for x in range(spaces):
+                spaces_string += " "
+            #print(courier)
+            if dont_print:
+                pass
+                #print("You've Entered The Wrong Page Number")
+            else:
+                print(f"[ {courier[0]} ] - {courier[1]} {spaces_string} {courier[3]} - [0{courier[2]}]")
+
+        fm.print_dashes()
+        print("")    
+        print(pages_display)
+
+        #highlight_page = lambda h : f"[[ {h} ]]" if h == cpage else f"[ {h} ]" # language is so mad wtf            
+        #print(*[highlight_page(p) for p in pages_as_numbers_listed])
+        
+        paginate_action = (input("Enter A Page Number Or 0 To Quit : "))
+        #print(current_page)
+        #print(final_page)
+        #print(paginate_action)
+        fm.print_dashes()
+        g = (int(paginate_action))
+        if g > final_page:
+            fm.format_display(disp_size)
+            return_one_line_art()
+            current_page = int(paginate_action)
+            dont_print = True
+        elif paginate_action != "0":
+            fm.format_display(disp_size)
+            current_page = int(paginate_action)
+            query = f'SELECT * FROM couriers WHERE courier_db_id > {(current_page - 1) * ipl} LIMIT {ipl}'
+            dont_print = False
+        else:
+            #fm.format_display(disp_size)
+            print("Ok Bye")
+            want_more_print = False
 
 
 
@@ -136,6 +370,7 @@ def delete_mass_couriers(disp_size):
 def update_courier(disp_size):
     fm.format_display(disp_size)
     print(*(Couriers.generate_index_name_string(Couriers)), sep="\n")
+    #db_print_test()
     to_update = int(input("Enter A Number To Update")) # 0 escape key pls)
     keys_list = ["name", "phone_number", "location"]
     for the_key in keys_list:
@@ -144,8 +379,11 @@ def update_courier(disp_size):
             Couriers.update_attr_by_key(Couriers, to_update, the_key, disp_size)
     print(f"Courier #{getattr(Couriers.couriers_list[to_update-1], 'courier_id')} Successfully Updated")
     fm.format_display(end_with_dashes=True)
-    for the_key in keys_list:
-        print(f"{the_key.replace('_',' ').title()} : {getattr(Couriers.couriers_list[to_update-1], the_key)}")
+    try:
+        for the_key in keys_list:
+            print(f"{the_key.replace('_',' ').title()} : {getattr(Couriers.couriers_list[to_update], the_key)}")
+    except IndexError:
+        print("Blame The Database Not Me Jeez")
     fm.print_dashes()
     fm.fake_input()
     
@@ -163,6 +401,7 @@ def create_new_courier(disp_size):  # v2 validation, from inherent calls = needs
     fm.format_display()
     get_zeros = lambda x : "0"*(4 - len(str(x)))
     cr = Couriers.couriers_list[-1] # the instances's address in memory
+    add_new_courier_to_db(name,int(phone_number),location,int(cr.courier_id))
     print(f"{cr.name.title()} - Created Sucessfully\n{fm.print_dashes(return_it=True)}\nCourier #{get_zeros(cr.courier_id)}{cr.courier_id}\nLocation : {cr.location}\nMobile : {cr.phone_number}")
     fm.print_dashes()
 
@@ -224,16 +463,17 @@ def get_mobile(disp_size, name:str = None): # v2 validation = needs try except t
     return(num)
 
 
-def get_courier_info(self, the_key): # basically for group all above then loop it?
-    pass
+def add_new_courier_to_db(name:str,phone:int,locate:str,uwuid:int):
+    query = f'INSERT INTO couriers (name, phone_number, location, courier_uuid) VALUES ("{name}",{phone},"{locate}",{uwuid})'
+    add_to_db(query)
 
 
 ## MAIN MENU FUNCTIONS #######################################################################################################################################################
 
 
-def main():
-    disp_size = 20
-    rows = 3
+def main(rows=3, disp_size=22): 
+    #disp_size = 20
+    #rows = 3
     menu_string = [f"COURIERS v3.01\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n","[ 1 ] Create New", "[ 2 ] Print All Couriers", "[ 3 ] Update Courier", "[ 4 ] Delete A Courier", "[ 5 ] Mass Delete Couriers", "[ - ] -", "[ 8 ] Quick Add 30", "[ 9 ] Quick Add 150", "[ S ] -", "[ L ] -", "[ 0 ] Quit\n","- - - - - - - - - - -"]
     user_menu_input = 1
     print_again = True
@@ -241,6 +481,8 @@ def main():
         if print_again: # for quick menu, returns the user to their place in this switch statement without printing the menu again
             # PRINT THE MENU & GET MENU INPUT  
             fm.format_display(disp_size)
+            #print(f"display size = {disp_size}")
+            #print(f"display size = {rows}")
             print(*menu_string, sep="\n")
             user_menu_input = input("Enter Menu Selection : ")
         
@@ -258,7 +500,10 @@ def main():
         # [2] PRINT COURIERS
         elif user_menu_input == "2":
             fm.format_display(disp_size)
-            print(*(Couriers.generate_index_name_string(Couriers)), sep="\n")
+            db_print_test(disp_size, rows)
+            print(f"display size = {disp_size}")
+            print(f"display size = {rows}")
+            #print(*(Couriers.generate_index_name_string(Couriers)), sep="\n")
             fm.fake_input()
 
         # [3] UPDATE COURIERS (need to do as submenu?)
@@ -280,6 +525,16 @@ def main():
         elif user_menu_input == "5":
             delete_mass_couriers(disp_size)
 
+        # [6] DB TEST READ
+        elif user_menu_input == "6":
+            read_from_db()
+            fm.fake_input()
+
+        # [7] DB GET TEST
+        elif user_menu_input == '7':
+            db_print_test(disp_size, rows)
+            fm.fake_input()
+
         # [8] - QUICK ADD 30
         elif user_menu_input == "8":
             quick_add_30_couriers()
@@ -295,12 +550,14 @@ def main():
 
         # [S] SETTINGS SUB MENU
         elif user_menu_input == "S" or user_menu_input == "s":
-            print(return_one_line_art())
+            return_one_line_art()
 
         # [L] L - LOAD (HIDDEN)
         elif user_menu_input == "L" or user_menu_input == "l":
-            pass
-
+            print("load all")
+            #Couriers.load_via_pickle()
+            fm.fake_input()
+        
         # [0] QUIT THE MENU / LOOP
         elif user_menu_input == "0":
             print("Aite cya")
@@ -314,7 +571,11 @@ def main():
         #    break
 
     # END WHILE
+    Couriers.save_all_products_as_csv(Couriers)
+    Couriers.save_objs_via_pickle(Couriers)
     print("SAVING...")
+    return(rows, disp_size)
+
 
 ## OTHER FUNCTIONS #######################################################################################################################################################
 
@@ -367,9 +628,17 @@ def quick_add_30_couriers():
 # can also use this for excepts/errors tbf lol
 def return_one_line_art():
     one_line_ascii_art_list = ["̿' ̿'\̵͇̿̿\з=(◕_◕)=ε/̵͇̿̿/'̿'̿ ̿  NOBODY MOVE!","( ͡° ͜ʖ ͡°) *STARING INTENSIFIES*","(╯°□°)--︻╦╤─ - - - WATCH OUT HE'S GOT A GUN","(⌐■_■)--︻╦╤─ - - - GET DOWN MR PRESIDENT","┻━┻︵  \(°□°)/ ︵ ┻━┻ FLIPPIN DEM TABLES","(ノಠ益ಠ)ノ彡︵ ┻━┻︵ ┻━┻ NO TABLE IS SAFE","ʕつಠᴥಠʔつ ︵ ┻━┻ HIDE YO KIDS HIDE YO TABLES","(ಠ_ಠ)┌∩┐ BYE BISH","(ง •̀_•́)ง FIGHT ME FOKER!","[¬º-°]¬  [¬º-°]¬ ZOMBIES RUN!","(╭ರ_•́) CURIOUSER AND CURIOUSER","つ ◕_◕ ༽つ つ ◕_◕ ༽つ TAKE MY ENERGY","༼つಠ益ಠ༽つ ─=≡ΣO)) HADOUKEN!"]
-    return(one_line_ascii_art_list[random.randint(0, len(one_line_ascii_art_list)-1)])
+    print(one_line_ascii_art_list[random.randint(0, len(one_line_ascii_art_list)-1)])
 
 
 if __name__ == "__main__":
     # DRIVER
-    main()
+    Couriers.load_couriers_via_csv()
+    the_rows = 3
+    the_display = 22
+    main(the_rows, the_display)
+
+
+
+
+
