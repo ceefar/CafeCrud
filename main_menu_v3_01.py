@@ -17,10 +17,10 @@ database = os.environ.get("mysql_db")
 
 # Establish a database connection
 connection = pymysql.connect(
-    host,
-    user,
-    password,
-    database
+    host = host,
+    user = user,
+    password = password,
+    database = database
 )
 
 
@@ -80,7 +80,7 @@ def main_menu(disp_size = 22, rows = 3):
             rows, disp_size = prdct.main_menu(rows, disp_size)
         # GO TO ORDERS
         elif user_menu_input == "3":
-            ordrs.main_orders() #rows, disp_size
+            rows, disp_size = ordrs.main_orders(rows, disp_size) 
         # HIDDEN (print display info)
         elif user_menu_input == "5":
             print(f"Rows : {rows}, Display Size : {disp_size}")
