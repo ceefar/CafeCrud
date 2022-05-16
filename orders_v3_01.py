@@ -1190,7 +1190,7 @@ def get_and_add_products(disp_size, rows, basket_total:float = 0.0, order_basket
         # aite so believe this will work just sending them back here to the same function
         # but that isn't going to save your basket or the cost of your basket
         # but since we initialise those vars at the start defo is a work around
-    
+    return(final_products_quants_list, basket_total)
 
         
    
