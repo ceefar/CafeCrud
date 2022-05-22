@@ -16,6 +16,7 @@ user = os.environ.get("mysql_user")
 password = os.environ.get("mysql_pass")
 database = os.environ.get("mysql_db")
 
+
 # Establish a database connection
 connection = pymysql.connect(
     host = host,
@@ -34,7 +35,8 @@ def get_from_db(command):
     #connection.close()
     return(myresult)
 
-def read_from_db():
+
+def read_from_db(): # should really be called print from db and reeeeeeally shouldnt be using this lmao
     cursor = connection.cursor()
     cursor.execute("SELECT * FROM couriers") 
     myresult = cursor.fetchall()
@@ -44,12 +46,14 @@ def read_from_db():
     #cursor.close()
     #connection.close()
 
+
 def add_to_db(command):
     cursor = connection.cursor()
     cursor.execute(f"{command}") 
     connection.commit()
     #cursor.close()
     #connection.close()
+
 
 # CLASSES ########################################
 # COURIERS CLASS #################################

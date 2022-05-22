@@ -1,28 +1,32 @@
+# IMPORTS
+# app modules
 import products_v1_02 as prdct
 import couriers_v3_01 as cour
 import format_random_v2_00 as fm # for formatting display, getting random things
 import orders_v3_01 as ordrs
-
-
+# db
 import pymysql
 import os
 from dotenv import load_dotenv
+# styling
+import colorama
+from colorama import Fore, Back, Style
 
-# Load environment variables from .env file
+# db setup
+# load environment variables from .env file
 load_dotenv()
 host = os.environ.get("mysql_host")
 user = os.environ.get("mysql_user")
 password = os.environ.get("mysql_pass")
 database = os.environ.get("mysql_db")
 
-# Establish a database connection
+# establish a database connection
 connection = pymysql.connect(
     host = host,
     user = user,
     password = password,
     database = database
 )
-
 
 def write_to_db():
     # A cursor is an object that represents a DB cursor,
@@ -62,15 +66,13 @@ def read_from_db():
     #cursor.close()
     connection.close()
 
-
-
 ##########################################################################
 
 def main_menu(disp_size = 22, rows = 3):
     user_menu_input = 1
     while user_menu_input != "0":
         # PRINT THE MENU & GET THE USERS INPUT
-        print_main_menu() 
+        print_main_menu(disp_size) 
         user_menu_input = input("Enter Menu Selection : ")
         # GO TO COURIERS
         if user_menu_input == "1":
@@ -104,10 +106,12 @@ def main_menu(disp_size = 22, rows = 3):
     # BADLY NEED TRY EXCEPT SO CATCHES ERRORS AND SAVES BEFORE QUITTING A FATAL EXCEPTION!
 
 
-def print_main_menu():
-    fm.print_app_name("MAIN")
+def print_main_menu(disp_size):
+    fm.format_display(disp_size)
+    #fm.print_app_name("MAIN")
     #menu_string = ["[ 1 ] for Couriers", "[ 2 ] for Orders", "[ 3 ] to Print Couriers", "[ 4 ] to Print Orders", "[ 0 ] to Quit","- - - - - - - - - - -"]
-    menu_string = ["[ 1 ] for Couriers", "[ 2 ] for Products", "[ 3 ] for Orders", "[ 0 ] to Quit","- - - - - - - - - - -"]
+    print(f"{Fore.CYAN}{Style.BRIGHT}MAIN MENU\n{Fore.RESET}{Style.RESET_ALL}{Fore.BLACK}{Style.BRIGHT}{fm.print_dashes(return_it=True)}{Style.RESET_ALL}\n")
+    menu_string = [f"{Fore.CYAN}[ 1 ]{Fore.RESET} Couriers", f"{Fore.CYAN}[ 2 ]{Fore.RESET} Products", f"{Fore.CYAN}[ 3 ]{Fore.RESET} Orders\n", f"{Fore.BLACK}{Style.BRIGHT}{fm.print_dashes(return_it=True)}{Style.RESET_ALL}", f"{Fore.RED}[ 0 ]{Fore.RESET} Quit",f"{Fore.BLACK}{Style.BRIGHT}{fm.print_dashes(return_it=True)}{Style.RESET_ALL}\n"]
     print(*menu_string, sep="\n")
 
 

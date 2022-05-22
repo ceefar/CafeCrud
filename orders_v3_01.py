@@ -8,9 +8,7 @@ import random
 from dotenv import load_dotenv
 import colorama
 from colorama import Fore, Back, Style
-colorama.init(autoreset=True)
- 
-
+colorama.init(autoreset=True) 
 ## END IMPORTS
 
 
@@ -1135,7 +1133,7 @@ def get_and_add_products(disp_size, rows, basket_total:float = 0.0, order_basket
         display_updated_basket(order_basket, original_order_basket) #display updated basket and confirm function
     for item_info in order_basket:
         final_products_list.append(item_info[0]) # FOR STRICT GENERATION PROJECT
-        final_products_quants_list.append((item_info[0],item_info[3])) # NEW! -> TO RETURN 
+        final_products_quants_list.append((item_info[0], item_info[3])) # NEW! -> TO RETURN 
     print(f"Final Basket Total\n{fm.print_dashes(return_it=True)}")
     new_basket_total = 0
     for product in order_basket:
@@ -1149,13 +1147,18 @@ def get_and_add_products(disp_size, rows, basket_total:float = 0.0, order_basket
         fm.fake_input()
         return(final_products_quants_list, basket_total) 
     else:
+        fm.format_display(disp_size)
         print("Your Basket Is Under £12.99")
         fm.print_dashes()
-        print(f"£{basket_total:.2f}")
+        print(f"{Fore.GREEN}£{basket_total:.2f}")
         fm.print_dashes()
-        print("So We're Adding A £2.99 Delivery Charge")
+        print(f"You're {Fore.RED}{Style.BRIGHT}£{(12.99 - basket_total):.2f}{Fore.RESET}{Style.RESET_ALL} Away From {Fore.YELLOW}Free Delivery")
         fm.print_dashes()
-        print(f"[ 1 ] Accept\n[ 2 ] Cancel\n[ 3 ] Order More\n{fm.print_dashes(return_it=True)}")  #(loop back to readd would be nice but urgh - maybe back out then back in but wouldnt save ur orders but meh)
+        print("Small Orders Include A £2.99 Delivery Charge")
+        fm.print_dashes()
+        print("What Do You Want To Do?")
+        fm.print_dashes()
+        print(f"[ 1 ] Accept Delivery Charge\n[ 2 ] Cancel My Order\n[ 3 ] Nom Nom Order More\n{fm.print_dashes(return_it=True)}")  #(loop back to readd would be nice but urgh - maybe back out then back in but wouldnt save ur orders but meh)
         y_n_or_more = input("Enter Your Selection : ")
         
         if y_n_or_more == "1": # ACCEPT
@@ -1172,8 +1175,9 @@ def get_and_add_products(disp_size, rows, basket_total:float = 0.0, order_basket
             print("")
             print("\(‾▿‾\) (/‾▿‾)/")
             print("")
-            #print("Your Order Has Been Confirmed")
-            print(final_products_quants_list)
+            print("Yay!")
+            #print(final_products_quants_list)
+            print("")
             fm.fake_input()
             return(final_products_quants_list, basket_total)  # THE ACTUAL FUCK THO, MAYBE JUST RETURN ONE TUPLE OR LIST AND UNPACK THE VALUES THEN BUT IT WAS WORKING BEFORE SO WTF MAN!!!! AND IT FUCKING WORKS WITH ONE WHAT THE FUCKKKKKKKK
         elif y_n_or_more == "2": # CANCEL
@@ -1193,8 +1197,6 @@ def get_and_add_products(disp_size, rows, basket_total:float = 0.0, order_basket
     return(final_products_quants_list, basket_total)
 
         
-   
-
 def product_basket(item_num_to_add:int, item_name_to_add:str, item_price_to_add:float, how_many:int, basket_list=None):
     if basket_list is None:
         basket_list = []
@@ -1205,35 +1207,45 @@ def product_basket(item_num_to_add:int, item_name_to_add:str, item_price_to_add:
 
 
 def update_quants_from_basket(order_basket):
+    print(f"{order_basket = }")
     made_updates = False
-    for i, item in enumerate(order_basket):
+    for i, item in enumerate(order_basket): # for every item in the basket (passed as value)
+        query = f'SELECT product_quant FROM products WHERE product_id = {order_basket[i][0]}'
+        result = get_from_db(query)
+        print(f"{order_basket[i][0] = }")
+        pure_result = result[0][0]
+        print(f"{pure_result = }")
         how_many = int(order_basket[i][3]) # might be unnecessary to force conversion here
+        print(f"{order_basket = }")
+        print(f"{how_many = }")
         final_quant = (prdct.Product.products_list[item[0]-1].quantity)-(how_many)
-        if final_quant < 0:
+        print(f"{final_quant = }")
+        if final_quant < 0: # if removing this (i) item would make the quantity negative then...
             #print(f"Uh Oh, Looks Like We Need To {0 - final_quant} From {prdct.Product.products_list[item[0]-1].name}")  
             #print(f"Updating User Basket - {order_basket}")
             #print(f"Updating Item Total - {order_basket[i][3]} + {final_quant}")
-            order_basket[i][3] + final_quant
-            made_updates = True   
-            order_basket.pop(i) 
+            order_basket[i][3] + final_quant # this is the amount you need to add BACK if it was infact sold out, hence the need for the var "final_quant"
+            made_updates = True   # bool so you dont update the actual quantity of the item (again, since its already sold out, as this would take it to negative)
+            order_basket.pop(i)  # remove the offending item from the basket
             # if ok then commit the change and return the order (ONLY RETURN IF VALID THEN COULD CHECK IF IS NONE ON RETURN - ACTUALLY YES AS WANT TO CONFIRM ANY UPDATES WITH THE USER)
         if made_updates == False:
             prdct.Product.products_list[item[0]-1].quantity -= how_many
+            pure_final_quant = pure_result - how_many
+            print(f"{pure_final_quant = }")
+            query2 = f'UPDATE products SET product_quant = {pure_final_quant} WHERE product_id = {order_basket[i][0]}'
+            add_to_db(query2)
+      
         #print(f"Updated Quantity = {prdct.Product.products_list[item[0]-1].quantity}")
     if made_updates:
-        #print("Made Updates")
         return(order_basket) # new and necessary - must return as may update it now 
     else:
         return(None)
 
 
-    # test
-    # then print orders to make sure is working as expected, print via class btw!
-    # then 
-    # natty lang and rich lib
-    # and remaining functions/functionality
-    # then new server stuff
-    # also new web scrape betting project idea
+    # RESULT STORES QUANT BEFORE CHANGES, SO...
+    # GET THAT VALUE PROPER, MINUS HOW MANY (how_many) FROM IT (ENSURE IS INT)
+    # UPDATE THE DATABASE
+
 
 
 def add_order_status(the_code = None):
