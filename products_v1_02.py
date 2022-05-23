@@ -469,8 +469,10 @@ class Product:
                 else:
                     user_wants_page = int(user_wants_page)
         except ValueError as e:
-            print("\nYou Really Like That Enter Button Huh?") # maybe this is bad ux tbf ??? "No... it's the children who are wrong" https://knowyourmeme.com/memes/am-i-so-out-of-touch
- 
+            print("\nWell This Is Awkward...") # maybe this is bad ux tbf ??? "No... it's the children who are wrong" https://knowyourmeme.com/memes/am-i-so-out-of-touch
+            fm.print_dashes()
+            print("Returning To Main Menu")
+            
 
     # v5 print - items per line
     def items_per_list_print(self, disp_size: int=22):

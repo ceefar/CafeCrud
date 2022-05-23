@@ -1,13 +1,21 @@
+# IMPORTS
+# db
+import pymysql
+import os
+from dotenv import load_dotenv
+# general
 import format_random_v2_00 as fm
 import re # from re import match - why doesnt this work wtf?
 import random
 import pickle
 import csv
+# styling
+import colorama
+from colorama import Fore, Back, Style
+from PyInquirer import prompt, Separator
 
-import pymysql
-import os
-from dotenv import load_dotenv
-
+# initialise colorama
+colorama.init(autoreset=True)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -216,63 +224,156 @@ class Couriers:
             Couriers.csv_constructor(x[1], x[2], x[3], int(x[0]), x[4]) ## DUH TO TEST THIS WORKS PUT THAT CONVERT TO INT IN THE CSV CONSTRUCTOR (or duhhhhh DO THE SPLIT LOOP THERE JUST TO TEST ANYWAYS AND GIVE IT THE WHOLE TEMP LIST (then do the return loop in there and its sick, THEN could convert it to a generator and THEN ill finally figure out how to use that pickle generator lol)
 
 
-    # HERES THE THING I DONT GET RIGHT...
-    # I CAN ACCESS THE DATA WHEN LOADING AS I LOAD TO A LIST IN CLASSES, SURE MAKES SENSE, ITS STRINGS, INTS, FLOATS, ETC STORED IN A LIST
-    # AND THO THEY WERE *CREATED* AS OBJECTS THEY STILL ARE JUST THAT DATA, SO I CAN STILL ACCESS THEM WITHOUT INSTANTIATING THEM
-    # I GET THAT, BUT... BECAUSE THEY *ARE* OBJECTS, DOES SIMPLY LOADING THEM INTO COURIERS LIST CREATE THEM AS OBJECTS?
-    # I OBVIOUSLY ASSUMED NOT, AS I HAVE RECREATED THE ACTUAL OBJECTS IN LOADS ALREADY IN OTHER MODULES AND VERSIONS
-    # BUT
-    # IF THIS WORKS, WHAT EVEN IS THE NEED FOR INSTANTIATING A CLASS IN THE FIRST PLACE? 
-    # (no direct access right?, and im assuming then that you cant access them via get attr or set attr if they havent been instantiated, despite the fact that it may seem as such because of the data that represents them being stored ahhhh)
-    # so its very much like saying, a bot goes over all ur media and messages when u die, 
-    # then they make a chat bot that seems to be just like you, knows alot of your intimate details and secrets, 
-    # practically unrecognisable, but its just ur data, its just a representation of information you had stored
-    # it is not *actually* you tho, again , just ur data...
-    # i mean ik that bit makes sense but have i got the rest right?
+## END CLASS #####################################################################################################################################################
 
-## END CLASS DECLARATIONS #####################################################################################################################################################
+####### NEW PRINT TEST
+#"""
+    # paginated print from products
+    def paginated_couriers_print(disp_size: int=22, rows: int=3, disp_str = "Enter Page Number (or use . to step forward +1 page) : ", title_str=None): #just changed rows default arg from 4 to 3 btw
+        try:
+            user_wants_page = 1 # initialises the loop
+            # whole method is this loop, obvs not ideal 
+            while user_wants_page != "0":
+                a_query = f'SELECT COUNT(courier_db_id) AS NumberOfCouriers FROM couriers'
+                the_result = get_from_db(a_query)
+                len_of_items_from_db = int(the_result[0][0])
+                usable_screen = int(disp_size) - 11
+                ipl = usable_screen # max amounts of items that can be in one vertical line
+                ipp = ipl * rows # items per page = max amount of items on the page, the vertical list multiplied by the amount of rows
+                #rows = 5 # var for readability and incase wanna change for smaller sized screens not baking into equation (ik actually is cols lol) - also is now a setting btw
+                full_pages = int(len_of_items_from_db / ipp) # amount of full pages (page full with items)
+                remaining_items = len_of_items_from_db % ipp # amount of remainder items (amount of items in the final page if not all full)
+                is_remainder = True # if remainder page this = True, if no remainder page = False
+                display_to_use = [] # list of lists of courier index per page but as display version (starts at 1 not zero) e.g. [[1,2,3,4,5][5,6,7,8,9,10] for ipp = 5]
+                pages_print = [] # bottom pages display string
+                pages_as_numbers_listed = [] # the amount of pages (e.g. 20 items with 5 items_per_page = [1,2,3,4], 66 items with 10 ipp = [1,2,3,4,5,6,7] (7th is the remainder which it includes here yes)
+                last_page = [] # the single list with indexes of the last page (basically display_to_use but the end of it)
+                # top printout
+                fm.format_display(disp_size)
+                if title_str is None:
+                    print(f"Sexy AF Pagniation - Dynamic Page Size") 
+                else:
+                    print(f"{title_str}")
+                print(f"Currently {ipp} Items Per Page, {len_of_items_from_db} Total Products\n{fm.print_dashes(return_it=True)}") # note the reason to point out uses index notation is for deleting and displaying etc this is best, thats just what indexing is for, but product numbers is more like a unique identifier that isn't the name incase it was required which im sure there are irl cases for
+                print(f"{Fore.BLUE}[ID] {Fore.CYAN}Courier {Fore.BLACK}{Style.BRIGHT}Location{Style.RESET_ALL} - {Fore.GREEN}[Phone Number]{Fore.RESET}\n")
+                
+                if remaining_items != 0: #print(f"usable_screen={usable_screen}\n,ipl={ipl}\n,ipp={ipp}\n,full_pages={full_pages}\n,remaining_items={remaining_items}\n,")
+                    page_nos = full_pages + 1
+                else:
+                    page_nos = full_pages
+                    is_remainder = False
 
-# real quick tryna get this generator to return,
-# either by appending the load all through a loop AND/OR maybe through classmethod custom init method for creating the objects through generation
+                # for the amount of pages that we will need, create a list of the pages as ints and mays well make a display string now too
+           
+                for county in range(page_nos):
+                    pages_as_numbers_listed.append(county + 1)
+                    # append that number (1,2,3,4...) formatted ( [ 1 ], [ 2 ]...) to a list as a string which we will display back to the user later 
+                    pages_print.append("[ " + str(county + 1) + " ]")
+                # END FOR
+                    # for the amount of full pages (starting at pos 0), create their lists, based on the items_per_page (variable you can change)
+                for x in range(full_pages):
+                    # list of the display indexes to use - we then add this to a "global list" when done looping
+                    display_list = []
+                    # for the ipp (amount of items per page), populate each page list (e.g 1 then 2 then 3) with items per page
+                    for number in range(ipp):
+                        # use the x value, one level up, which relates to the page numbers index starting at 0
+                        # and multiply that value by the items per page, meaning if we are on page index 0 (so page 1)
+                        # we do not multiply, well we do but by 0 so we get 0, so the numbers aren't modified (apart from adding 1 for the display)
+                        # so if x == 0, the value is 0 so 0 + 0 (+1) = 1, 1 + 0 (+1) = 2, etc -> 1,2... then when x == 1, 1*ipp(5) = 5 so 0 + 5 (+1) = 6, 1 + 5 (+1) = 7...
+                        y = x * ipp
+                        # number starts at zero so need to also add 1 to the Y value (which is just increments of the ipp (ipp x 1, ipp x 2, ipp x 3...))
+                        display_list.append(number + y + 1)
+                    # append it to the "global" list
+                    display_to_use.append(display_list)
+                # END FOR
+                # literally the same as above but with just the end items and so only need that final index amount 
+                final_index = full_pages * ipp
+                for number in range(remaining_items):
+                        y = final_index
+                        last_page.append(number + y + 1)
+
+                current_page_number = (user_wants_page - 1) * ipp
+                the_page = []
+                # function
+                # creates the initial lists with just ints of the order
+                for g in range(ipl):
+                        x = g + current_page_number # if needs to be plus 1 then do here and also in x < len(main_co_list) + 1
+                        row_list = []
+                        for row in range(rows): # rows? needed (for X per line)
+                            if x < len_of_items_from_db:
+                                row_list.append(x)
+                            x += ipl
+                        the_page.append(row_list)
+                        x += 1
+                        # END FOR
+                # END FOR
+                # legit the entire above section can be achieved in 1 list comprehension, similar to...
+                # cpage = lambda x : x - 1)*60 ???
+                # [(cpage(a)),(cpage(b)),(cpage(c)),(cpage(d)),(cpage(e)) for ] ??? whatever... returning lists for a,b,c... (1,)
+                # filling in the above for loop with the data you want
+                
 
 
-####### PRINT - NEW - FROM ORDERS (ikr lol)
-
-def items_per_list_print_couriers(disp_size: int=22, rows = 3):
-    #ipl = rows #da fuck 
-    usable_screen = int(disp_size) - 10
-    ipl = usable_screen
-    i_list = []
-    # function
-    # creates the initial lists with just ints of the order
-    for g in range(ipl):
-            x = g # if needs to be plus 1 then do here and also in x < len(main_co_list) + 1
-            g_list = []
-            for i in range(int(len(Couriers.couriers_list)/ipl) + 1): # rows? needed (for X per line)
-                if x < len(Couriers.couriers_list):
-                    g_list.append(x)
-                x += ipl
-            i_list.append(g_list)
-            x += 1
-            # END FOR
-    # END FOR    
-    # filling in the above for loop with the data you want
-
-    for short_list in i_list: 
-        print_string = ""
-        for index in short_list:
-            current_string = (f"{index} {Couriers.couriers_list[index].name}")
-            spaces = 35 - (len(current_string))
-            spaces_string = ""
-            if int(index) + 1 == 10:
-                spaces -= 1
-            for x in range(spaces):
-                spaces_string += " "
-            cr = Couriers.couriers_list[index]    
-            print_string += (f"[ {int(index) + 1} ] {cr.name} - {cr.location} {spaces_string}")
-        print("")
-        fm.print_dashes()
-        print(print_string)
+                # pull data from the db, yes pulls all the data from the table
+                # yes would be ideal to just pull the current page (FROM products p LIMIT (ipl)) (or even the current item to print (or line whatever))
+                # no not implementing here as have done elsewhere in the project
+                query = f'SELECT c.courier_db_id, c.name, c.location, c.phone_number FROM couriers c'
+                result = list(get_from_db(query)) 
+        
+                for the_line in the_page: 
+                    print_string = ""
+                    for courr in the_line:
+                        courr + current_page_number
+                        
+                        current_string = (f"{result[courr][3]} {result[courr][0]} {result[courr][1]} {(result[courr][2])}")
+                        spaces = 49 - (len(current_string))
+                        spaces_string = ""
+                        if int(result[courr][3]) == 10: # adjust for the extra character in the display by minusing one from the spaces on the end
+                            spaces -= 0
+                        if int(result[courr][3]) == 100: # not needed now "index" (id) is taken directly from db
+                            spaces -= 0
+                        if int(result[courr][3]) == 1000:
+                            spaces -= 0
+                        if int(result[courr][3]) == 10000:
+                            spaces -= 0
+                        if int(result[courr][3]) == 100000:
+                            spaces -= 0
+                        for x in range(spaces - 5):
+                            spaces_string += " "
+                        print_string += (f"{Fore.BLUE}[ {Style.DIM}{Fore.CYAN}{result[courr][0]}{Style.RESET_ALL} {Fore.BLUE}]{Fore.RESET} {Fore.WHITE}{Style.BRIGHT}{result[courr][1]}{Fore.RESET}{Style.RESET_ALL} {spaces_string} {Fore.BLACK}{Style.BRIGHT}({(result[courr][2])}{Fore.BLACK}{Style.BRIGHT}){Style.RESET_ALL} - {Fore.GREEN}£{result[courr][3]}{Fore.RESET}       ")
+                    print(print_string)
+                    # yield back as tuples with index value, check as recieving yield, if index value not in the indexes that would be in the current page (0-59,60-119...)
+                cpage = int((current_page_number + ipp) / ipp)
+                # move this to format random
+                def return_one_line_art():
+                    one_line_ascii_art_list = ["̿' ̿'\̵͇̿̿\з=(◕_◕)=ε/̵͇̿̿/'̿'̿ ̿  NOBODY MOVE!","( ͡° ͜ʖ ͡°) *staring intensifies*","(╯°□°)--︻╦╤─ - - - WATCH OUT HE'S GOT A GUN","(⌐■_■)--︻╦╤─ - - - GET DOWN MR PRESIDENT","┻━┻︵  \(°□°)/ ︵ ┻━┻ FLIPPIN DEM TABLES","(ノಠ益ಠ)ノ彡︵ ┻━┻︵ ┻━┻ NO TABLE IS SAFE","ʕつಠᴥಠʔつ ︵ ┻━┻ HIDE YO KIDS HIDE YO TABLES","(ಠ_ಠ)┌∩┐ BYE BISH","(ง •̀_•́)ง FIGHT ME FOKER!",f"{Fore.GREEN}[¬º-°]¬  [¬º-°]¬{Fore.YELLOW}  ZOMBIES RUN!{Fore.RESET}","(╭ರ_•́) CURIOUSER AND CURIOUSER","つ ◕_◕ ༽つ つ ◕_◕ ༽つ TAKE MY ENERGY",f"༼つಠ益ಠ༽つ {Fore.RED}─=≡ΣO)){Fore.YELLOW} HADOUKEN!{Fore.RESET}"]
+                    return(one_line_ascii_art_list[random.randint(0, len(one_line_ascii_art_list)-1)])
+                # END NESTED FUNCTION that i should totally move 
+                if cpage > len(pages_as_numbers_listed) : print(return_one_line_art()) ############### ascii art, could do if max go back to one but prefer the easter egg
+                print("\n", end="PAGES ")
+                #pages_print.insert(0,"PAGE NUMBERS :")
+                highlight_page = lambda h : f"{Fore.BLUE}[[{Fore.CYAN} {h} {Fore.BLUE}]]{Fore.RESET}" if h == cpage else f"{Fore.BLACK}{Style.BRIGHT}[ {h} ]{Fore.RESET}{Style.RESET_ALL}" # language is so mad wtf            
+                print(*[highlight_page(p) for p in pages_as_numbers_listed])
+                #print("^ page numbers ^")
+                #
+                #
+                # UPDATING
+                # user_wants_page = input("\nEnter Page Number (or use . to step forward +1 page) : ")
+                #
+                #
+                user_wants_page = input(f"\n{disp_str}")
+                if user_wants_page == "0":
+                    break
+                elif user_wants_page == ".":
+                    user_wants_page = int((current_page_number + ipp) / ipp) + 1
+                    #print(f"Page - {user_wants_page}")
+                else:
+                    user_wants_page = int(user_wants_page)
+        except ValueError as e:
+            print("\nWell This Is Awkward...") # maybe this is bad ux tbf ??? "No... it's the children who are wrong" https://knowyourmeme.com/memes/am-i-so-out-of-touch
+            fm.print_dashes()
+            print("Returning To Main Menu")
+#"""
 
 
 # TEST DB PRINT ##########################################################################################################################################################
@@ -296,8 +397,8 @@ def db_print_test(disp_size: int=22, rows = 3):
     current_page = 1
     dont_print = False
     query = f'SELECT * FROM couriers LIMIT {ipl}'
-    print(f"display size = {disp_size}")
-    print(f"display size = {rows}")
+    print(f"{disp_size = }")
+    print(f"{rows = }")
     while want_more_print: 
         #query = query
         result = get_from_db(query)
@@ -313,7 +414,7 @@ def db_print_test(disp_size: int=22, rows = 3):
                 pass
                 #print("You've Entered The Wrong Page Number")
             else:
-                print(f"[ {courier[0]} ] - {courier[1]} {spaces_string} {courier[3]} - [0{courier[2]}]")
+                print(f"[ {courier[0]} ] {courier[1]} {spaces_string} {courier[3]} - [0{courier[2]}]")
 
         fm.print_dashes()
         print("")    
@@ -383,13 +484,12 @@ def update_courier(disp_size):
         fm.format_display()
         if get_user_yes_true_or_no_false(before_text=f"Want To Update {the_key.replace('_',' ').title()}?\n{fm.print_dashes(return_it=True)}"): # ig this is a great example of good code, needed 1 additional line to add an amazing amount of functionality, going from just looping all the attributes and forcing the user to change them, to commit confirm with relevant information displayed beforehand, again 1 line, and as an easy addition, not preplanned per se, but more implementing good habits consistently so things do "just work"
             Couriers.update_attr_by_key(Couriers, to_update, the_key, disp_size)
-    print(f"Courier #{getattr(Couriers.couriers_list[to_update-1], 'courier_id')} Successfully Updated")
-    fm.format_display(end_with_dashes=True)
-    try:
-        for the_key in keys_list:
-            print(f"{the_key.replace('_',' ').title()} : {getattr(Couriers.couriers_list[to_update], the_key)}")
-    except IndexError:
-        print("Blame The Database Not Me Jeez")
+    #print(f"Courier #{getattr(Couriers.couriers_list[to_update-1], 'courier_id')} Successfully Updated")
+    #try:
+    #    for the_key in keys_list:
+    #        print(f"{the_key.replace('_',' ').title()} : {getattr(Couriers.couriers_list[to_update], the_key)}")
+    #except IndexError:
+    #    print("Blame The Database Not Me Jeez")
     fm.print_dashes()
     fm.fake_input()
     
@@ -480,7 +580,7 @@ def add_new_courier_to_db(name:str,phone:int,locate:str,uwuid:int):
 def main(rows=3, disp_size=22): 
     #disp_size = 20
     #rows = 3
-    menu_string = [f"COURIERS v3.01\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n","[ 1 ] Create New", "[ 2 ] Print All Couriers", "[ 3 ] Update Courier", "[ 4 ] Delete A Courier", "[ 5 ] Mass Delete Couriers", "[ - ] -", "[ 8 ] Quick Add 30", "[ 9 ] Quick Add 150", "[ S ] -", "[ L ] -", "[ 0 ] Quit\n","- - - - - - - - - - -"]
+    menu_string = [f"COURIERS v3.01\n(using object oriented principles)\n{fm.print_dashes(return_it=True)}\n","[ 1 ] Create New", "[ 2 ] Print All Couriers", "[ 3 ] Update Courier", "[ 4 ] Delete A Courier", "[ 5 ] Mass Delete Couriers", "[ - ] -", "[ 8 ] Quick Add 30", "[ 9 ] Test Paginated Print", "[ S ] -", "[ L ] -", "[ 0 ] Quit\n","- - - - - - - - - - -"]
     user_menu_input = 1
     print_again = True
     while user_menu_input != "0":
@@ -545,14 +645,9 @@ def main(rows=3, disp_size=22):
         elif user_menu_input == "8":
             quick_add_30_couriers()
 
-        # [9] - QUICK ADD 150
+        # [9] - TESTING
         elif user_menu_input == "9":
-            quick_add_30_couriers()
-            quick_add_30_couriers()
-            quick_add_30_couriers()
-            quick_add_30_couriers()
-            quick_add_30_couriers()
-            quick_add_30_couriers()
+            Couriers.paginated_couriers_print(disp_size, rows)
 
         # [S] SETTINGS SUB MENU
         elif user_menu_input == "S" or user_menu_input == "s":
