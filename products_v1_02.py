@@ -111,7 +111,7 @@ class Product:
                 self.product_id_cache.append(int(self.product_number))
             # append it to the "global" list and print back confirmation
             self.products_list.append(self)
-            print(f"#{self.product_number} {self.name} ({self.quantity}) - £{self.price_gbp} Created") # TO ADD A BOOL PARAM FOR SHOWING THIS PRINT STATEMENT?  
+            #print(f"#{self.product_number} {self.name} ({self.quantity}) - £{self.price_gbp:.2f} Created") # TO ADD A BOOL PARAM FOR SHOWING THIS PRINT STATEMENT?  
         #END IF
         #print(Product.product_id_cache)
     #END INIT
@@ -149,11 +149,14 @@ class Product:
             fm.print_dashes()
             print("Do Want Ascending Or Descending Order?")
             fm.print_dashes()
-            print("Ascending = Smallest To Largest (1 -> 10 -> 100)")
-            print("Descending = Largest To Smallest (100 -> 10 -> 1)") 
+            print(f"{Fore.GREEN}[A]{Fore.RESET}scending = Smallest To Largest (1 -> 100)")
+            print(f"{Fore.CYAN}[D]{Fore.RESET}escending = Largest To Smallest (100 -> 1)") 
             fm.print_dashes()
-            asc_or_desc = input(f"Enter {Fore.GREEN}[A]{Fore.RESET}scending or {Fore.YELLOW}[D]{Fore.RESET}escending : ")
-            if asc_or_desc == "A" or asc_or_desc == "a":
+            print("[ 1 ] - Ascending")
+            print("[ 2 ] - Descending")
+            fm.print_dashes()
+            asc_or_desc = input(f"Enter Your Selection : ")
+            if asc_or_desc == "A" or asc_or_desc == "a" or asc_or_desc == "1":
                 is_ascending = True
             else:
                 is_ascending = False
@@ -309,8 +312,9 @@ class Product:
                 else:
                     user_wants_page = int(user_wants_page)
         except ValueError as e:
-            print("\nYou Really Like That Enter Button Huh?") # maybe this is bad ux tbf ??? "No... it's the children who are wrong" https://knowyourmeme.com/memes/am-i-so-out-of-touch
- 
+            print("\nWell This Is Awkward...") # maybe this is bad ux tbf ??? "No... it's the children who are wrong" https://knowyourmeme.com/memes/am-i-so-out-of-touch
+            fm.print_dashes()
+            print("Returning To Main Menu")
 
 
     # v6 print - pagination
@@ -735,7 +739,7 @@ def settings_submenu(disp_size, rows):
         # PRINT THE SUB MENU  
         fm.format_display(disp_size)
         print(f"{Fore.CYAN}{Style.BRIGHT}SETTINGS SUBMENU\n{Fore.RESET}{Style.RESET_ALL}{Fore.BLACK}{Style.BRIGHT}{fm.print_dashes(return_it=True)}{Style.RESET_ALL}\n")
-        menu_string = [f"{Fore.CYAN}[ 1 ]{Fore.RESET} Display - Set Screen Size", f"{Fore.CYAN}[ 2 ]{Fore.RESET} Display - Set Columns", f"{Fore.CYAN}[ 3 ]{Fore.RESET} Quick Add - 10 Default Products", f"{Fore.CYAN}[ 4 ]{Fore.RESET} Quick Add - X Products", f"{Fore.CYAN}[ 5 ]{Fore.RESET} Load - From Default File\n", f"{Fore.BLACK}{Style.BRIGHT}{fm.print_dashes(return_it=True)}{Style.RESET_ALL}", f"{Fore.RED}[ 0 ]{Fore.RESET} Back To Product Menu", f"{Fore.BLACK}{Style.BRIGHT}{fm.print_dashes(return_it=True)}{Style.RESET_ALL}\n"]
+        menu_string = [f"{Fore.CYAN}[ 1 ]{Fore.RESET} Display - Set Screen Size", f"{Fore.CYAN}[ 2 ]{Fore.RESET} Display - Set Columns", f"{Fore.CYAN}[ 3 ]{Fore.RESET} Quick Add - 10 Default Products{Fore.BLACK}{Style.BRIGHT} [alpha]{Style.RESET_ALL}", f"{Fore.CYAN}[ 4 ]{Fore.RESET} {Fore.BLACK}{Style.BRIGHT}Quick Add - X Products [legacy]{Style.RESET_ALL}", f"{Fore.CYAN}[ 5 ]{Fore.RESET} {Fore.BLACK}{Style.BRIGHT}Load - From CSV File [legacy]{Style.RESET_ALL}\n", f"{Fore.BLACK}{Style.BRIGHT}{fm.print_dashes(return_it=True)}{Style.RESET_ALL}", f"{Fore.RED}[ 0 ]{Fore.RESET} Back To Product Menu", f"{Fore.BLACK}{Style.BRIGHT}{fm.print_dashes(return_it=True)}{Style.RESET_ALL}\n"]
         print(*menu_string, sep="\n")
         # GET THE USERS INPUT
         user_submenu_input = input("Enter Your Input : ")
@@ -926,7 +930,7 @@ def validate_price(result): # REGEX VALIDATON BEST!!
             fm.format_display() # DISP HEIGHT WOULD BE NICE - NEED TO SORT PROPER FUNCTION LAYOUT FIRST THO OBVS!
             print(f"{Fore.RED}Invalid Price {Fore.RESET} - Try Again")
             fm.print_dashes()
-        price_update = float(input(f"Please Enter The Updated Price (Current = {result[0][1]}) : "))
+        price_update = float(input(f"Please Enter The Updated Price (Current = £{result[0][1]}) : £"))
         print_counter += 1
     return(str(price_update))
 
@@ -972,7 +976,7 @@ def print_pyinq(to_update:int):
     query = f'SELECT p.product_name FROM products p WHERE product_id = {to_update}'
     result = (get_from_db(query))
     print(f"Updating {Fore.YELLOW}{result[0][0]}{Fore.RESET}")
-    fm.print_dashes()
+    fm.print_dashes(20)
     answers = prompt(questions)
     if answers['update_product'] == 'Quantity':
         update_quant_new(to_update)
@@ -1024,31 +1028,24 @@ def delete_product_new(disp_size, rows):
 
 ## CREATE NEW FUNCTIONS ############################################################################################################################################
 
+# Create new product instance, add to db
 def create_new_product(disp_size:int):
     fm.format_display(disp_size)
+    len_query = f'SELECT COUNT(product_id) AS NumberOfProducts FROM products'
+    len_result = get_from_db(len_query)
     print(f"{Fore.CYAN}Create New Product{Fore.RESET}\n{fm.print_dashes(return_it=True)}")
-    name = input(f"Enter A Name For Product {Product.count_products_list(Product) + 1} : ")
-    # CONVERT PRICE IN POUNDS TO FLOAT, IF DOESNT WORK THEN GO AGAIN
+    name = input(f"Enter A Name For Product {len_result[0][0]} : ")
     price_in_pounds = get_price()
+    fm.print_dashes()
     quantity = input(f"Enter The Quantity For {name.title()} : ")
     fm.format_display(disp_size)
-    # CREATE NEW INSTANCE OF PRODUCT WITH USER GIVEN NAME (runs print confirms to user, etc)
     Product(name, price_in_pounds, quantity)
     add_query = f'INSERT INTO products (product_name, product_price, product_quant) VALUES ("{name}", "{price_in_pounds}", "{int(quantity)}")' 
     add_to_db(add_query)
-    # FOR PRINTING BACK 0s TO THE USER, USES THE LEN OF THE STR OF THE LEN OG PRODUCT NUMBERS AND USES IT AS AN INDEX TO SLICE FROM THE END OF THE STRING
-    get_zeros = lambda x : "0"*(4 - len(str(x)))
-    print(f"Product #{get_zeros(Product.get_last_product_number(Product))}{Product.get_last_product_number(Product)} Added Sucessfully")
-    #################
-    # UPDATED AS ZEROS REMOVED
-    # trim_by = lambda x : 4 - len(str(len(x)))
-    # print(f"Product #{str(Product.get_last_product_number(Product)[trim_by(Product.products_list):])} Added Sucessfully")
-    #################
+    get_zeros = lambda x : "0"*(4 - len(str(x))) # yes i do realise these are supposed to be anonymous, still tryna nail them tbf
+    print(f"Product #{get_zeros(len_result[0][0])}{len_result[0][0]}\n{fm.print_dashes(return_it=True)}\n{Fore.YELLOW}{name}\n{Fore.GREEN}Created Sucessfully{Fore.RESET}")
     fm.print_dashes()
 
-# both so validation, both so reusable
-# get quantity
-# get name
     
 def get_price():
     the_price = "1"
