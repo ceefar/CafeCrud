@@ -21,7 +21,7 @@ jobs:
         pip install pygount
     - name: run pygount
       run:
-        pygount --format=summary .main  
+        pygount --format=summary ./PyTest1
  
   
 
