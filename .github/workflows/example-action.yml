@@ -1,0 +1,13 @@
+name: list-repo
+
+on: push
+
+jobs:
+  list-repo-files:
+    name: List files in repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout-repo
+        uses: actions/checkout@v2
+      - name: list-dir
+        run: ls -laR # Recursively list directory contents
