@@ -1,4 +1,4 @@
-name: list-repo
+name: ez-clap
 
 on:
   push:
