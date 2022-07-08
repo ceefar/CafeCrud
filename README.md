@@ -18,6 +18,17 @@ My most proud implemented feature, included complex mathematics using arrays for
 Truly dynamic with spacing by string length, plus using user set columns and page/terminal height, and dynamic user set sorting options e.g. sort by price  
 Had further plans to expand and clean this up but unfortunately had emergency surgery 3 days before hand in (see notes at the bottom of the readme)  
 Check out the images to see it in action, note the output order is vertical despite print being performed horizontally  
+  
+**Pagination Example Images**    
+Default Pagination - note scarcity display, current page highlight, dynamic spacing applied by string length, etc  
+<img src="https://thehardgainerbible.com/wp-content/uploads/2022/07/CafeCrud_ProductsPagination_Page1.png" alt="ProductsPagination1" width="500"/>
+<img src="https://thehardgainerbible.com/wp-content/uploads/2022/07/CafeCrud_ProductsPagination_Page2.png" alt="ProductsPagination2" width="500"/>
+Dynamic User Options - page (terminal) height and column amount  
+<img src="https://thehardgainerbible.com/wp-content/uploads/2022/07/CafeCrud_Pagination_UserSelected_DynamicPageHeight.png" alt="PageHeight" width="500"/>
+<img src="https://thehardgainerbible.com/wp-content/uploads/2022/07/CafeCrud_Pagination_UserSelected_DynamicColumns.png" alt="PageColumns" width="500"/>
+Dynamic Pagination Based On User Inputs :heart_eyes:  
+<img src="https://thehardgainerbible.com/wp-content/uploads/2022/07/CafeCrud_ProductsPagination_DynamicExample_TallPageOneColumn.png" alt="DynamicPagination" width="500"/>
+
    
 **Multiple Modules**  
 Orders -  In depth ordering system with delivery charge, and on the fly product quantity db updating  
