@@ -22,10 +22,12 @@ Check out the images to see it in action, note the output order is vertical desp
 **Pagination Example Images**    
 Default Pagination - note scarcity display, current page highlight, dynamic spacing applied by string length, etc  
 <img src="https://thehardgainerbible.com/wp-content/uploads/2022/07/CafeCrud_ProductsPagination_Page1.png" alt="ProductsPagination1" width="500"/>
-<img src="https://thehardgainerbible.com/wp-content/uploads/2022/07/CafeCrud_ProductsPagination_Page2.png" alt="ProductsPagination2" width="500"/>
+<img src="https://thehardgainerbible.com/wp-content/uploads/2022/07/CafeCrud_ProductsPagination_Page2.png" alt="ProductsPagination2" width="500"/>  
+  
 Dynamic User Options - page (terminal) height and column amount  
 <img src="https://thehardgainerbible.com/wp-content/uploads/2022/07/CafeCrud_Pagination_UserSelected_DynamicPageHeight.png" alt="PageHeight" width="200"/>
-<img src="https://thehardgainerbible.com/wp-content/uploads/2022/07/CafeCrud_Pagination_UserSelected_DynamicColumns.png" alt="PageColumns" width="400"/>
+<img src="https://thehardgainerbible.com/wp-content/uploads/2022/07/CafeCrud_Pagination_UserSelected_DynamicColumns.png" alt="PageColumns" width="400"/>  
+  
 Dynamic Pagination Based On User Inputs :heart_eyes:  
 <img src="https://thehardgainerbible.com/wp-content/uploads/2022/07/CafeCrud_ProductsPagination_DynamicExample_TallPageOneColumn.png" alt="DynamicPagination" width="500"/>
 
