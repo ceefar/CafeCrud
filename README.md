@@ -26,7 +26,7 @@ Default Pagination - note scarcity display, current page highlight, dynamic spac
   
 Dynamic Pagination Based On User Inputs :heart_eyes:  
 Updated with user inputs to tall height with 2 columns (instead of the default 3 col), all implemented dynamically    
-<img src="https://thehardgainerbible.com/wp-content/uploads/2022/07/CafeCrud_ProductsPagination_DynamicExample_TallPageOneColumn.png" alt="DynamicPagination" width="500"/>
+<img src="https://thehardgainerbible.com/wp-content/uploads/2022/08/pagination3.png" alt="DynamicPagination" width="800"/>
 
    
 **Multiple Modules**  
